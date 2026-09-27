@@ -24,12 +24,15 @@ public abstract class BigTerminalAmountMixin extends AEBaseScreen<MEStorageMenu>
     }
 
     @WrapOperation(
-            method = "renderSlot",
+            // This overrides a vanilla method and is SRG-named in the Forge release JAR.
+            method = "renderSlot(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/world/inventory/Slot;)V",
+            remap = true,
             at =
                     @At(
                             value = "INVOKE",
                             target =
-                                    "Lappeng/api/stacks/AEKey;formatAmount(JLappeng/api/stacks/AmountFormat;)Ljava/lang/String;"))
+                                    "Lappeng/api/stacks/AEKey;formatAmount(JLappeng/api/stacks/AmountFormat;)Ljava/lang/String;",
+                            remap = false))
     private String ae2lt$amount(
             AEKey key, long amount, AmountFormat format, Operation<String> original) {
         if (menu instanceof TianshuMaintenanceMenu m && m.getBigStock(key) != null)
