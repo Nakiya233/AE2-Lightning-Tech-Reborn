@@ -23,6 +23,9 @@ public final class Ae2ltSlotBackgrounds {
     public static final ResourceLocation FILTER_COMPONENT = sprite("filter_component");
     public static final ResourceLocation LIGHTNING_COLLAPSE_MATRIX = sprite("lightning_collapse_matrix");
 
+    public static final ResourceLocation MINING_TOOL = sprite("mining_tool");
+    public static final ResourceLocation MINING_BLOCK = sprite("mining_block");
+
     private static ResourceLocation sprite(String name) {
         return new ResourceLocation(AE2LightningTech.MODID, "block/slot/" + name);
     }

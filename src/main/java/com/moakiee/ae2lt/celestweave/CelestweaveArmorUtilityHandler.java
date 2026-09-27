@@ -306,6 +306,7 @@ public final class CelestweaveArmorUtilityHandler {
     private static void clearPlayerRuntime(Player player) {
         ArmorCapabilityCollector.clearCache(player);
         PhaseFlightMovementGuard.clear(player);
+        PhaseFlightPlayerState.endControl(player);
         PhaseFlightSubmodule.clearTransientPhaseState(player);
         for (EquipmentSlot slot : List.of(
                 EquipmentSlot.HEAD,

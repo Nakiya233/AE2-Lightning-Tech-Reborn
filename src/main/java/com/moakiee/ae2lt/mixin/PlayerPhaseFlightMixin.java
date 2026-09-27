@@ -187,7 +187,9 @@ public abstract class PlayerPhaseFlightMixin implements PhaseFlightPlayerState.A
         ae2lt$sneakHoverTravel = player.isControlledByLocalInstance() && FlightSneakMovement.isActive(player);
         if (ae2lt$sneakHoverTravel) {
             player.setSprinting(false);
-            PhaseFlightMovementGuard.runAsSelfMovement(player, () -> player.setDeltaMovement(Vec3.ZERO));
+            // Preserve downward contact so native collision keeps locked ground crouch stable.
+            double vertical = player.onGround() ? Math.min(0.0D, player.getDeltaMovement().y) : 0.0D;
+            PhaseFlightMovementGuard.runAsSelfMovement(player, () -> player.setDeltaMovement(0.0D, vertical, 0.0D));
         }
     }
 

@@ -1,5 +1,7 @@
 package com.moakiee.ae2lt.client;
 
+import java.util.function.DoubleSupplier;
+
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -11,18 +13,22 @@ import appeng.client.gui.style.Blitter;
 import com.moakiee.ae2lt.menu.OverloadProcessingFactoryMenu;
 
 public class OverloadProcessingFactoryProgressWidget extends AbstractWidget {
-    private final OverloadProcessingFactoryMenu menu;
+    private final DoubleSupplier progress;
     private final Blitter overlay;
 
     public OverloadProcessingFactoryProgressWidget(OverloadProcessingFactoryMenu menu, Blitter overlay) {
+        this(menu::getProgress, overlay);
+    }
+
+    public OverloadProcessingFactoryProgressWidget(DoubleSupplier progress, Blitter overlay) {
         super(0, 0, overlay.getSrcWidth(), overlay.getSrcHeight(), Component.empty());
-        this.menu = menu;
+        this.progress = progress;
         this.overlay = overlay.copy();
     }
 
     @Override
     protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        int filled = Mth.clamp((int) Math.ceil(width * menu.getProgress()), 0, width);
+        int filled = Mth.clamp((int) Math.ceil(width * progress.getAsDouble()), 0, width);
         if (filled <= 0) {
             return;
         }

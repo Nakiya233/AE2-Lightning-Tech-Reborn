@@ -1,6 +1,7 @@
 package com.moakiee.ae2lt.client;
 
 import java.util.List;
+import java.util.function.LongSupplier;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -14,12 +15,18 @@ import appeng.client.gui.widgets.ITooltip;
 import com.moakiee.ae2lt.menu.OverloadProcessingFactoryMenu;
 
 public class OverloadProcessingFactoryEnergyBar extends AbstractWidget implements ITooltip {
-    private final OverloadProcessingFactoryMenu menu;
+    private final LongSupplier storedEnergy;
+    private final LongSupplier energyCapacity;
     private final Blitter fill;
 
     public OverloadProcessingFactoryEnergyBar(OverloadProcessingFactoryMenu menu, Blitter fill) {
+        this(menu::getStoredEnergy, menu::getEnergyCapacity, fill);
+    }
+
+    public OverloadProcessingFactoryEnergyBar(LongSupplier storedEnergy, LongSupplier energyCapacity, Blitter fill) {
         super(0, 0, fill.getSrcWidth(), fill.getSrcHeight(), Component.empty());
-        this.menu = menu;
+        this.storedEnergy = storedEnergy;
+        this.energyCapacity = energyCapacity;
         this.fill = fill.copy();
     }
 
@@ -27,8 +34,8 @@ public class OverloadProcessingFactoryEnergyBar extends AbstractWidget implement
     protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         fill.copy().opacity(0.2f).dest(getX(), getY(), width, height).blit(guiGraphics);
 
-        long capacity = Math.max(1L, menu.getEnergyCapacity());
-        long stored = Math.min(menu.getStoredEnergy(), capacity);
+        long capacity = Math.max(1L, energyCapacity.getAsLong());
+        long stored = Math.min(storedEnergy.getAsLong(), capacity);
         int filled = (int) Math.round(height * (double) stored / (double) capacity);
         if (filled <= 0) {
             return;
@@ -46,8 +53,8 @@ public class OverloadProcessingFactoryEnergyBar extends AbstractWidget implement
     public List<Component> getTooltipMessage() {
         return List.of(Component.translatable(
                 "ae2lt.gui.overload_factory.energy.tooltip",
-                menu.getStoredEnergy(),
-                menu.getEnergyCapacity()));
+                storedEnergy.getAsLong(),
+                energyCapacity.getAsLong()));
     }
 
     @Override

@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "ae2lt:block/yellow_pigmee_framed_building_slab_bottom"
+    },
+    "type=top": {
+      "model": "ae2lt:block/yellow_pigmee_framed_building_slab_top"
+    },
+    "type=double": {
+      "model": "ae2lt:block/yellow_pigmee_framed_building_slab_double"
+    }
+  }
+}

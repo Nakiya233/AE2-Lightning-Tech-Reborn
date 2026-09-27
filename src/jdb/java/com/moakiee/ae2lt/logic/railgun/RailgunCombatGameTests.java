@@ -94,6 +94,23 @@ public final class RailgunCombatGameTests {
     }
 
     @GameTest(templateNamespace = "ae2lt_railgun", template = "empty", timeoutTicks = 100)
+    public static void replacingPercentageModuleKeepsMultidimensionalExecution(GameTestHelper helper) throws Exception {
+        var p = player(helper);
+        var g = gun(p, true, false, false);
+        var workbench = com.moakiee.ae2lt.blockentity.workbench.RailgunWorkbenchAdapter.INSTANCE;
+        var removed = workbench.uninstallOne(g, helper.getLevel().registryAccess(), "overload_execution");
+        check(removed.is(ModItems.RAILGUN_MODULE_OVERLOAD_EXECUTION.get()), "remove overload module");
+        check(workbench.installOne(g, helper.getLevel().registryAccess(),
+                new ItemStack(ModItems.RAILGUN_MODULE_MULTIDIMENSIONAL_EXECUTION.get())), "install multidimensional module");
+        check(ModDataComponents.RAILGUN_SETTINGS.get(g).executionMode() == RailgunExecutionMode.PERCENTAGE,
+                "fixture must retain the saved percentage setting across the module swap");
+        var victim = target(helper, helper.absolutePos(new BlockPos(3, 2, 4)));
+        hit(helper, p, g, victim, RailgunChargeTier.EHV3, 1, false, false, 1);
+        check(!victim.isAlive(), "saved percentage mode must not suppress multidimensional execution");
+        helper.succeed();
+    }
+
+    @GameTest(templateNamespace = "ae2lt_railgun", template = "empty", timeoutTicks = 100)
     public static void chargedPercentagesAreOrdinaryDamageAndNeverDoubleApply(GameTestHelper helper) throws Exception {
         var p = player(helper);
         var g = gun(p, true, false, true);

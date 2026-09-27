@@ -56,6 +56,14 @@ public class FumoBlock extends Block implements EntityBlock {
     }
 
     @Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state,
+            net.minecraft.world.entity.LivingEntity placer, net.minecraft.world.item.ItemStack stack) {
+        super.setPlacedBy(level, pos, state, placer, stack);
+        if (stack.hasCustomHoverName() && level.getBlockEntity(pos) instanceof FumoBlockEntity fumo)
+            fumo.setCustomName(stack.getHoverName());
+    }
+
+    @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING, WATERLOGGED);
     }

@@ -27,6 +27,7 @@ import com.moakiee.ae2lt.menu.TianshuWirelessPatternEncodingTermMenu;
 import com.moakiee.ae2lt.registry.ModBlocks;
 import com.moakiee.ae2lt.registry.ModItems;
 import com.moakiee.ae2lt.util.RecipeManagerByTypeAccess;
+import com.moakiee.ae2lt.registry.ModFumos;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.gui.handlers.IGuiClickableArea;
@@ -105,6 +106,12 @@ public class JEIPlugin implements IModPlugin {
         registration.addIngredientInfo(
                 ModItems.PIGMEE_CORE.get(),
                 Component.translatable("jei.ae2lt.pigmee_core.info"));
+
+        registration.addIngredientInfo(ModFumos.RAINBOW_PIGMEE_FUMO_ITEM.get(),
+                Component.translatable("jei.ae2lt.rainbow_pigmee.info"));
+
+        registration.addIngredientInfo(ModBlocks.MINING_FACTORY.get().asItem(),
+                Component.translatable("jei.ae2lt.mining_factory.info"));
 
         var level = Minecraft.getInstance().level;
         if (level == null) {

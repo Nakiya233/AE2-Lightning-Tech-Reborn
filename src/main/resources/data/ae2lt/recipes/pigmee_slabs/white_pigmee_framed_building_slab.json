@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "BBB"
+  ],
+  "key": {
+    "B": {
+      "item": "ae2lt:white_pigmee_framed_building_panel"
+    }
+  },
+  "result": {
+    "count": 6,
+    "item": "ae2lt:white_pigmee_framed_building_slab"
+  }
+}

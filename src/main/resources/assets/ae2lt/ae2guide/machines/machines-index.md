@@ -8,7 +8,7 @@ navigation:
 
 # Processing Machines
 
-AE2 Lightning Tech Reborn provides several processing machines for different material chains. Except for the Atmospheric Ionizer, which consumes AE energy from the ME network, these machines connect to an ME network and use external FE. The regular processing machines require stored Lightning; the Pigmee Crystal Catalyzer is the water-only, zero-FE exception.
+AE2 Lightning Tech Reborn provides several processing machines for different material chains. Except for the Atmospheric Ionizer, which consumes AE energy from the ME network, most machines connect to an ME network and use external FE. The Mining Factory can run directly from FE without a network or stored Lightning. The regular processing machines require stored Lightning; the Pigmee Crystal Catalyzer is the water-only, zero-FE exception.
 
 <SubPages />
 
@@ -20,7 +20,7 @@ Most machines support **Auto Export**. When enabled, a machine pushes its output
 
 ### Speed Cards
 
-Except for the Crystal Catalyzer, every processing machine accepts vanilla AE2 **Speed Cards** to increase processing speed, up to 4 cards.
+Except for the Crystal Catalyzer and Mining Factory, processing machines accepts vanilla AE2 **Speed Cards** to increase processing speed, up to 4 cards.
 
 ### Lightning Substitution
 

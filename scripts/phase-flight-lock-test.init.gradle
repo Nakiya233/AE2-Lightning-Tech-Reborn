@@ -1,0 +1,11 @@
+// Focused native Forge movement, permissions and phase-vault lifecycle regression suite.
+allprojects {
+    afterEvaluate {
+        sourceSets.jdb.java.setIncludes(['**/PhaseFlightAndLockGameTests.java', '**/PhaseFlightGroundCrouchGameTests.java'])
+        minecraft.runs.gameTestServer {
+            property 'forge.enabledGameTestNamespaces', 'ae2lt_phase,ae2lt,ae2lt_mining'
+            workingDirectory project.file('build/phase-flight-lock-forge')
+            mods { ae2lt { source sourceSets.jdb } }
+        }
+    }
+}

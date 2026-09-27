@@ -11,11 +11,11 @@
       "item": "minecraft:cobblestone"
     },
     "P": {
-      "item": "ae2lt:pigmee_fumo"
+      "item": "ae2lt:rainbow_pigmee_fumo"
     }
   },
   "result": {
-    "count": 64,
+    "count": 8,
     "item": "ae2lt:pigmee_building_block"
   }
 }

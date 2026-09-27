@@ -1,6 +1,7 @@
 package com.moakiee.ae2lt.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.moakiee.ae2lt.registry.ModFumos;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.EntityModelSet;
@@ -12,7 +13,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Draws the normal item first and then adds its End Portal silhouette pass.
+ * Shared Pigmee silhouette renderer: portal or rainbow surface, then the face markings.
  */
 final class HyperdimensionalPigmeeItemRenderer extends BlockEntityWithoutLevelRenderer {
     HyperdimensionalPigmeeItemRenderer(
@@ -31,7 +32,11 @@ final class HyperdimensionalPigmeeItemRenderer extends BlockEntityWithoutLevelRe
         }
 
         BakedModel model = hyperModel.baseModel();
-        HyperdimensionalPigmeePortalLayer.renderItem(model, poseStack, buffers);
+        if (stack.is(ModFumos.RAINBOW_PIGMEE_FUMO_ITEM.get())) {
+            RainbowPigmeeSurfaceLayer.renderItem(model, poseStack, buffers);
+        } else {
+            HyperdimensionalPigmeePortalLayer.renderItem(model, poseStack, buffers);
+        }
         HyperdimensionalPigmeeTextureLayer.renderItem(
                 poseStack, buffers, packedOverlay);
     }

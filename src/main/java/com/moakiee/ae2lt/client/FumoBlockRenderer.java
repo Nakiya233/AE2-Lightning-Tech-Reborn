@@ -57,6 +57,14 @@ public class FumoBlockRenderer implements BlockEntityRenderer<FumoBlockEntity> {
         Level level = blockEntity.getLevel();
         BlockPos pos = blockEntity.getBlockPos();
         boolean hyperdimensional = state.is(ModFumos.HYPERDIMENSIONAL_PIGMEE_FUMO.get());
+        boolean rainbow = state.is(ModFumos.RAINBOW_PIGMEE_FUMO.get());
+
+        if (rainbow) {
+            RainbowPigmeeSurfaceLayer.renderBlock(model, renderState, modelData, poseStack, buffer);
+            HyperdimensionalPigmeeTextureLayer.renderBlock(renderState, poseStack, buffer, packedOverlay);
+            poseStack.popPose();
+            return;
+        }
 
         if (level != null) {
             if (!hyperdimensional) {

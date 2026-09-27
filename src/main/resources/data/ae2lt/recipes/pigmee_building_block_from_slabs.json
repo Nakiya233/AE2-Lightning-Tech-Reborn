@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "tag": "ae2lt:pigmee_building_slabs"
+    },
+    {
+      "tag": "ae2lt:pigmee_building_slabs"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "item": "ae2lt:pigmee_building_block"
+  }
+}

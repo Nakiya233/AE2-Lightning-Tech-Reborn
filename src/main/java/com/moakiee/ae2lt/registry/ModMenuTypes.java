@@ -1,5 +1,7 @@
 package com.moakiee.ae2lt.registry;
 
+import com.moakiee.ae2lt.menu.OverloadedIOPortMenu;
+import com.moakiee.ae2lt.menu.MiningFactoryMenu;
 import com.moakiee.ae2lt.AE2LightningTech;
 import com.moakiee.ae2lt.integration.ae2wtlib.TianshuWirelessTerminalFactory;
 import com.moakiee.ae2lt.menu.AtmosphericIonizerMenu;
@@ -92,6 +94,12 @@ public final class ModMenuTypes {
             LIGHTNING_COLLECTOR = MENU_TYPES.register(
                     "lightning_collector",
                     () -> LightningCollectorMenu.TYPE);
+
+    public static final RegistryObject<MenuType<OverloadedIOPortMenu>>
+            OVERLOADED_IO_PORT = MENU_TYPES.register("overloaded_io_port", () -> OverloadedIOPortMenu.TYPE);
+
+    public static final RegistryObject<MenuType<MiningFactoryMenu>>
+            MINING_FACTORY = MENU_TYPES.register("mining_factory", () -> MiningFactoryMenu.TYPE);
 
     public static final RegistryObject<MenuType<OverloadProcessingFactoryMenu>>
             OVERLOAD_PROCESSING_FACTORY = MENU_TYPES.register(

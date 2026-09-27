@@ -23,7 +23,6 @@ import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 
 import com.moakiee.ae2lt.celestweave.CelestweaveArmorMaterials;
 import com.moakiee.ae2lt.celestweave.PhaseWingFlight;
-import com.moakiee.ae2lt.celestweave.phase.PhaseLockProjectionRules;
 import com.moakiee.ae2lt.celestweave.phase.PhaseLockService;
 import com.moakiee.ae2lt.client.CelestweaveArmorRenderExtensions;
 
@@ -85,7 +84,10 @@ public final class PhaseLockProjectionItem extends ArmorItem {
         if (level.isClientSide() || !(entity instanceof ServerPlayer player)) {
             return;
         }
-        if (!PhaseLockProjectionRules.isExpectedSlot(equipmentSlot, slotId)) {
+        // Forge 1.20.1 Inventory.tick uses an index local to each compartment (armor 0..3),
+        // not the menu's global 36..39 indices. Identity also rejects a copied projection in a
+        // hotbar/offhand slot with the same local index.
+        if (player.getItemBySlot(equipmentSlot) != stack) {
             stack.setCount(0);
             return;
         }

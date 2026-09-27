@@ -11,6 +11,7 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraftforge.client.ChunkRenderTypeSet;
 import net.minecraftforge.client.model.geometry.IGeometryBakingContext;
 import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
@@ -27,14 +28,18 @@ public class ConnectedTextureGeometry implements IUnbakedGeometry<ConnectedTextu
     private final boolean ambientOcclusion;
     private final boolean gui3d;
     private final boolean usesBlockLight;
+    @Nullable
+    private final SlabType slabType;
 
     public ConnectedTextureGeometry(ResourceLocation connectionId, ChunkRenderTypeSet renderTypes,
-            boolean ambientOcclusion, boolean gui3d, boolean usesBlockLight) {
+            boolean ambientOcclusion, boolean gui3d, boolean usesBlockLight,
+            @Nullable SlabType slabType) {
         this.connectionId = connectionId;
         this.renderTypes = renderTypes;
         this.ambientOcclusion = ambientOcclusion;
         this.gui3d = gui3d;
         this.usesBlockLight = usesBlockLight;
+        this.slabType = slabType;
     }
 
     @Override
@@ -46,6 +51,10 @@ public class ConnectedTextureGeometry implements IUnbakedGeometry<ConnectedTextu
         @Nullable TextureAtlasSprite overlay = context.hasMaterial("overlay")
                 ? spriteGetter.apply(context.getMaterial("overlay"))
                 : null;
+        if (slabType != null) {
+            return new ConnectedSlabBakedModel(base, ctm, overlay, renderTypes,
+                    ambientOcclusion, gui3d, usesBlockLight, slabType);
+        }
         ConnectionPredicate predicate = ConnectionPredicates.get(connectionId);
         return new ConnectedTextureBakedModel(base, ctm, overlay, predicate, renderTypes,
                 ambientOcclusion, gui3d, usesBlockLight);

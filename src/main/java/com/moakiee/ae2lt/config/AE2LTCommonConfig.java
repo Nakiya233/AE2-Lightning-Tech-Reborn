@@ -62,6 +62,7 @@ public final class AE2LTCommonConfig {
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
         VALUES = new Values(builder);
+        com.moakiee.ae2lt.machine.miningfactory.MiningFactoryConfig.define(builder);
         SPEC = builder.build();
     }
 

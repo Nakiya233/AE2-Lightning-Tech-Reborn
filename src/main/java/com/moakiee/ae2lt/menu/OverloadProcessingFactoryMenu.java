@@ -34,7 +34,7 @@ import com.moakiee.ae2lt.machine.overloadfactory.recipe.OverloadProcessingRecipe
 import com.moakiee.ae2lt.machine.overloadfactory.recipe.OverloadProcessingRecipeService;
 import com.moakiee.ae2lt.me.key.LightningKey;
 
-public class OverloadProcessingFactoryMenu extends AEBaseMenu implements FrequencyBindingMenu {
+public class OverloadProcessingFactoryMenu extends AEBaseMenu implements FrequencyBindingMenu, MachineOutputConfigMenu {
     public static final MenuType<OverloadProcessingFactoryMenu> TYPE = Ae2ltMenuBuilder.buildUnregistered(
             MenuTypeBuilder
                     .create(OverloadProcessingFactoryMenu::new, OverloadProcessingFactoryBlockEntity.class)

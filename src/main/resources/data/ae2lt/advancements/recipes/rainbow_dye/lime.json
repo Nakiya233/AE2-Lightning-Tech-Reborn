@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_catalyst": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "ae2lt:rainbow_pigmee_fumo"
+            ]
+          }
+        ]
+      }
+    },
+    "has_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "ae2lt:rainbow_dye/lime"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_catalyst",
+      "has_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "ae2lt:rainbow_dye/lime"
+    ]
+  }
+}

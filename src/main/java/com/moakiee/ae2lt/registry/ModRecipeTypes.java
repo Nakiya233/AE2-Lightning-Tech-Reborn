@@ -11,6 +11,7 @@ import com.moakiee.ae2lt.machine.overloadfactory.recipe.OverloadProcessingRecipe
 import com.moakiee.ae2lt.recipe.CreativePigmeeDuplicationRecipe;
 import com.moakiee.ae2lt.recipe.HyperdimensionalPigmeeConversionRecipe;
 import com.moakiee.ae2lt.recipe.PigmeeBuildingRecipe;
+import com.moakiee.ae2lt.recipe.RainbowPigmeeDyeRecipe;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -106,6 +107,10 @@ public final class ModRecipeTypes {
 
     public static final RegistryObject<RecipeSerializer<PigmeeBuildingRecipe>> PIGMEE_BUILDING_SERIALIZER =
             RECIPE_SERIALIZERS.register("pigmee_building", PigmeeBuildingRecipe.Serializer::new);
+
+    public static final RegistryObject<RecipeSerializer<RainbowPigmeeDyeRecipe>>
+            RAINBOW_PIGMEE_DYE_SERIALIZER =
+                    RECIPE_SERIALIZERS.register("rainbow_pigmee_dye", RainbowPigmeeDyeRecipe.Serializer::new);
 
     private ModRecipeTypes() {
     }

@@ -2,6 +2,7 @@ package com.moakiee.ae2lt.event;
 
 import com.moakiee.ae2lt.AE2LightningTech;
 import com.moakiee.ae2lt.lightning.LightningTransformService;
+import com.moakiee.ae2lt.lightning.RainbowPigmeeTransformation;
 import com.moakiee.ae2lt.lightning.ProtectedItemEntityHelper;
 import com.moakiee.ae2lt.logic.EasterEggAudience;
 import com.moakiee.ae2lt.logic.research.ResearchRitualService;
@@ -42,6 +43,7 @@ public final class LightningItemTransformationHandler {
         }
 
         data.putBoolean(TRANSFORMATION_CHECKED_TAG, true);
+        RainbowPigmeeTransformation.handleLightning(serverLevel, lightningBolt);
         ResearchRitualService.handleLightning(serverLevel, lightningBolt);
         LightningTransformService.handleLightning(serverLevel, lightningBolt);
         checkEasterEgg(serverLevel, lightningBolt);

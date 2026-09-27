@@ -76,7 +76,9 @@ final class PhaseEnvironmentMovementSourceContractTest {
         // authorize the entire travel call (which would admit external fluid forces).
         String hoverReset = "PhaseFlightMovementGuard.runAsSelfMovement(player, () -> player.setDeltaMovement(Vec3.ZERO));";
         assertTrue(playerMixin.contains(hoverReset));
-        assertFalse(playerMixin.replace(hoverReset, "").contains("runAsSelfMovement("));
+        String groundContact = "PhaseFlightMovementGuard.runAsSelfMovement(player, () -> player.setDeltaMovement(0.0D, vertical, 0.0D));";
+        assertTrue(playerMixin.contains(groundContact));
+        assertFalse(playerMixin.replace(hoverReset, "").replace(groundContact, "").contains("runAsSelfMovement("));
         assertFalse(playerMixin.contains("beginSelfMovement("));
         assertFalse(playerMixin.contains("endSelfMovement("));
     }

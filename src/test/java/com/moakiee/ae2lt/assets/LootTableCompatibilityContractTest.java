@@ -36,11 +36,13 @@ class LootTableCompatibilityContractTest {
             "minecraft:item");
     private static final Set<String> SUPPORTED_CONDITIONS = Set.of(
             "forge:loot_table_id",
+            "minecraft:block_state_property",
             "minecraft:match_tool",
             "minecraft:random_chance",
             "minecraft:survives_explosion");
     private static final Set<String> SUPPORTED_FUNCTIONS = Set.of(
             "minecraft:apply_bonus",
+            "minecraft:copy_name",
             "minecraft:explosion_decay",
             "minecraft:set_count");
 
@@ -62,7 +64,7 @@ class LootTableCompatibilityContractTest {
                 "ae2lt", "loot_modifiers", "inactive_firmament_spirit_core_end_city.json"));
         inspectForPost120Schema(modifier, readJson(modifier), problems);
 
-        assertEquals(104, tableCount, "The compatibility audit must cover every AE2LT loot table");
+        assertEquals(140, tableCount, "The compatibility audit must cover every AE2LT loot table");
         assertTrue(problems.isEmpty(), String.join(System.lineSeparator(), problems));
     }
 
@@ -124,7 +126,16 @@ class LootTableCompatibilityContractTest {
                 problems.add(path + ": unaudited loot type '" + type + "'");
             }
         }
-        object.asMap().values().forEach(child -> inspectForPost120Schema(path, child, problems));
+        object.entrySet().forEach(entry -> {
+            // A slab's properties.type is a block-state value, not a loot-entry discriminator.
+            if (entry.getKey().equals("properties") && object.has("condition")
+                    && object.get("condition").getAsString().equals("minecraft:block_state_property")) {
+                entry.getValue().getAsJsonObject().entrySet().forEach(property ->
+                        assertTrue(property.getValue().isJsonPrimitive(), "Block state properties must be scalar"));
+            } else {
+                inspectForPost120Schema(path, entry.getValue(), problems);
+            }
+        });
     }
 
     private static void validateDiscriminator(

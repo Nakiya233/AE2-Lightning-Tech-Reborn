@@ -1,0 +1,12 @@
+// Native Forge regressions for alpha 63c0115a: mining, bulk IO, rainbow Pigmee and ground crouch.
+allprojects {
+    afterEvaluate {
+        sourceSets.jdb.java.setIncludes(['**/ForgeCraftingInput.java', '**/MiningFactoryGameTests.java', '**/OverloadedIOPortGameTests.java',
+                '**/PhaseFlightGroundCrouchGameTests.java', '**/RainbowPigmeeGameTests.java', '**/PigmeeBuildingGameTests.java'])
+        minecraft.runs.gameTestServer {
+            property 'forge.enabledGameTestNamespaces', 'ae2lt,ae2lt_mining'
+            workingDirectory project.file('build/latest-alpha-forge')
+            mods { ae2lt { source sourceSets.jdb } }
+        }
+    }
+}

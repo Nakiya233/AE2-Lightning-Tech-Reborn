@@ -15,11 +15,13 @@ public final class ModFumos {
 
     public static RegistryObject<FumoBlock> MOAKIEE_FUMO;
     public static RegistryObject<FumoBlock> CYSTRYSU_FUMO;
+    public static RegistryObject<FumoBlock> RAINBOW_PIGMEE_FUMO;
     public static RegistryObject<FumoBlock> PIGMEE_FUMO;
     public static RegistryObject<FumoBlock> CREATIVE_PIGMEE_FUMO;
     public static RegistryObject<FumoBlock> HYPERDIMENSIONAL_PIGMEE_FUMO;
     public static RegistryObject<BlockItem> MOAKIEE_FUMO_ITEM;
     public static RegistryObject<BlockItem> CYSTRYSU_FUMO_ITEM;
+    public static RegistryObject<FumoBlockItem> RAINBOW_PIGMEE_FUMO_ITEM;
     public static RegistryObject<FumoBlockItem> PIGMEE_FUMO_ITEM;
     public static RegistryObject<FumoBlockItem> CREATIVE_PIGMEE_FUMO_ITEM;
     public static RegistryObject<FumoBlockItem> HYPERDIMENSIONAL_PIGMEE_FUMO_ITEM;
@@ -39,6 +41,11 @@ public final class ModFumos {
         PIGMEE_FUMO_ITEM = ModItems.ITEMS.register("pigmee_fumo",
                 () -> new FumoBlockItem(PIGMEE_FUMO.get(), new Item.Properties(),
                         "tooltip.ae2lt.pigmee_fumo"));
+
+        RAINBOW_PIGMEE_FUMO = ModBlocks.BLOCKS.register("rainbow_pigmee_fumo", FumoBlock::new);
+        RAINBOW_PIGMEE_FUMO_ITEM = ModItems.ITEMS.register("rainbow_pigmee_fumo",
+                () -> new FumoBlockItem(RAINBOW_PIGMEE_FUMO.get(), new Item.Properties().rarity(Rarity.UNCOMMON),
+                        "tooltip.ae2lt.rainbow_pigmee_fumo"));
 
         CREATIVE_PIGMEE_FUMO = ModBlocks.BLOCKS.register("creative_pigmee_fumo", FumoBlock::new);
         CREATIVE_PIGMEE_FUMO_ITEM = ModItems.ITEMS.register("creative_pigmee_fumo",

@@ -1,0 +1,22 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_material": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "tag": "ae2lt:pigmee_building_materials"
+          }
+        ]
+      }
+    }
+  },
+  "rewards": {
+    "recipes": [
+      "ae2lt:pigmee_slabs/blue_pigmee_building_slab",
+      "ae2lt:pigmee_slabs/blue_pigmee_building_slab_from_blocks",
+      "ae2lt:pigmee_slabs/blue_pigmee_building_slab_from_slabs"
+    ]
+  }
+}

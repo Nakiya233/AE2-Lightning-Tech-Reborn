@@ -28,7 +28,7 @@ public final class PigmeeBuildingRecipe extends ShapedRecipe {
         var remaining = super.getRemainingItems(input);
         for (int slot = 0; slot < input.getContainerSize(); slot++) {
             var stack = input.getItem(slot);
-            if (stack.is(ModFumos.PIGMEE_FUMO_ITEM.get())) {
+            if (stack.is(ModFumos.RAINBOW_PIGMEE_FUMO_ITEM.get())) {
                 remaining.set(slot, stack.copyWithCount(1));
             }
         }

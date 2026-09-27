@@ -1,0 +1,6 @@
+{
+  "parent": "ae2lt:block/pigmee_fumo",
+  "textures": {
+    "particle": "ae2lt:block/hyperdimensional_pigmee_fumo"
+  }
+}

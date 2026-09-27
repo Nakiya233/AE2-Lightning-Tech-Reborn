@@ -1,0 +1,16 @@
+// Run only against the disposable world in build/forge-client-<probe>/saves/BackportQA.
+// -Palpha_client_probe=mining|io|rainbow|phase; the probes replace test inventories and blocks.
+allprojects {
+    afterEvaluate {
+        def probe = project.findProperty('alpha_client_probe') ?: 'mining'
+        def probes = [mining: 'MiningFactory', io: 'OverloadedIOPort', rainbow: 'RainbowPigmee', phase: 'PhaseFlight']
+        if (!probes.containsKey(probe)) throw new GradleException('Unknown alpha client probe: ' + probe)
+        sourceSets.jdb.java.setIncludes(probes.values().collect { '**/' + it + 'ClientProbe.java' })
+        minecraft.runs.client {
+            workingDirectory project.file('build/forge-client-' + probe)
+            property 'ae2lt.' + [mining: 'mining', io: 'io', rainbow: 'rainbow', phase: 'phase'][probe] + 'ClientProbe', 'true'
+            args '--quickPlaySingleplayer', 'BackportQA', '--width', '1100', '--height', '800'
+            mods { ae2lt { source sourceSets.jdb } }
+        }
+    }
+}

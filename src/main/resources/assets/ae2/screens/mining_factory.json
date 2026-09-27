@@ -1,0 +1,108 @@
+{
+  "$schema": "schema.json",
+  "includes": [
+    "common/common.json",
+    "common/player_inventory.json"
+  ],
+  "background": {
+    "texture": "ae2lt:textures/guis/mining_factory.png",
+    "srcRect": [
+      0,
+      0,
+      176,
+      183
+    ]
+  },
+  "slots": {
+    "PLAYER_INVENTORY": {
+      "left": 8,
+      "grid": "BREAK_AFTER_9COLS",
+      "top": 99
+    },
+    "PLAYER_HOTBAR": {
+      "left": 8,
+      "grid": "HORIZONTAL",
+      "top": 157
+    },
+    "MACHINE_INPUT": {
+      "left": 26,
+      "top": 23
+    },
+    "CONFIG": {
+      "left": 26,
+      "top": 59
+    },
+    "MACHINE_OUTPUT": {
+      "left": 98,
+      "top": 23,
+      "grid": "BREAK_AFTER_3COLS"
+    },
+    "AE2LT_OVERLOAD_FACTORY_MATRIX": {
+      "left": 62,
+      "top": 59
+    }
+  },
+  "text": {
+    "dialog_title": {
+      "text": {
+        "translate": "block.ae2lt.mining_factory"
+      },
+      "position": {
+        "left": 8,
+        "top": 6
+      }
+    },
+    "player_inventory_title": {
+      "text": {
+        "translate": "container.inventory"
+      },
+      "position": {
+        "left": 8,
+        "top": 88
+      }
+    }
+  },
+  "images": {
+    "energyBar": {
+      "texture": "ae2lt:textures/guis/mining_factory.png",
+      "srcRect": [
+        177,
+        1,
+        4,
+        16
+      ]
+    },
+    "processOverlay": {
+      "texture": "ae2lt:textures/guis/mining_factory.png",
+      "srcRect": [
+        176,
+        18,
+        51,
+        10
+      ]
+    },
+    "miningOverlay": {
+      "texture": "ae2lt:textures/guis/mining_factory.png",
+      "srcRect": [
+        176,
+        28,
+        18,
+        14
+      ]
+    }
+  },
+  "widgets": {
+    "energyBar": {
+      "left": 47,
+      "top": 23
+    },
+    "processArea": {
+      "left": 44,
+      "top": 46
+    },
+    "lightningStatus": {
+      "left": 156,
+      "top": 4
+    }
+  }
+}

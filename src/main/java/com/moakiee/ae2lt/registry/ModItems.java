@@ -80,6 +80,8 @@ public final class ModItems {
             OverloadCrystalItem::new,
             new Item.Properties());
 
+    public static final RegistryObject<Item> DYE_BASE = registerSimpleItem("dye_base", new Item.Properties());
+
     public static final RegistryObject<Item> OVERLOAD_CRYSTAL_DUST =
             registerSimpleItem("overload_crystal_dust", new Item.Properties());
 

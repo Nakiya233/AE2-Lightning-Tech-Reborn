@@ -17,7 +17,7 @@ final class PigmeeCuriosCompatibilityContractTest {
     private static final Path RESOURCE_ROOT = Path.of("src/main/resources/data");
 
     @Test
-    void allThreePigmeesShareTheStandardCuriosHeadSlot() throws Exception {
+    void allFourPigmeesShareTheStandardCuriosHeadSlot() throws Exception {
         JsonObject tag = readJson("curios/tags/items/head.json");
         Set<String> values = tag.getAsJsonArray("values").asList().stream()
                 .map(element -> element.getAsString())
@@ -27,7 +27,8 @@ final class PigmeeCuriosCompatibilityContractTest {
         assertEquals(Set.of(
                 "ae2lt:pigmee_fumo",
                 "ae2lt:hyperdimensional_pigmee_fumo",
-                "ae2lt:creative_pigmee_fumo"), values);
+                "ae2lt:creative_pigmee_fumo",
+                "ae2lt:rainbow_pigmee_fumo"), values);
     }
 
     @Test
@@ -51,10 +52,11 @@ final class PigmeeCuriosCompatibilityContractTest {
 
         assertTrue(clientSetup.contains("ModList.get().isLoaded(\"curios\")"));
         assertTrue(clientSetup.contains("PigmeeCuriosClientBridge.registerRenderers()"));
-        assertEquals(3, countOccurrences(bridge, "CuriosRendererRegistry.register("));
+        assertEquals(4, countOccurrences(bridge, "CuriosRendererRegistry.register("));
         assertTrue(bridge.contains("ModFumos.PIGMEE_FUMO_ITEM.get()"));
         assertTrue(bridge.contains("ModFumos.HYPERDIMENSIONAL_PIGMEE_FUMO_ITEM.get()"));
         assertTrue(bridge.contains("ModFumos.CREATIVE_PIGMEE_FUMO_ITEM.get()"));
+        assertTrue(bridge.contains("ModFumos.RAINBOW_PIGMEE_FUMO_ITEM.get()"));
         assertTrue(bridge.contains("ItemDisplayContext.HEAD"));
         assertTrue(bridge.contains("CustomHeadLayer.translateToHead"));
     }
