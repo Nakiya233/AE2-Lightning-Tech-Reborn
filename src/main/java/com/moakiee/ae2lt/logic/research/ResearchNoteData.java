@@ -23,6 +23,9 @@ public record ResearchNoteData(
         List<String> descriptionKeys,
         boolean consumed) {
 
+    private static final ResourceLocation LEGACY_UNDYING = new ResourceLocation("ae2lt:module_undying");
+    private static final ResourceLocation OVERLOAD_PROTECTION = new ResourceLocation("ae2lt:module_overload_protection");
+
     public static final String TAG_RITUAL_SEED = "RitualSeed";
     public static final String TAG_GOAL = "Goal";
     public static final String TAG_RECIPE_ITEMS = "RecipeItems";
@@ -94,7 +97,9 @@ public record ResearchNoteData(
 
             ResourceLocation id = ResourceLocation.tryParse(stringTag.getAsString());
             if (id != null) {
-                values.add(id);
+                // These are raw recipe IDs, not ItemStack codecs, so registry aliases alone
+                // cannot update old notes before ritual multiset/order comparisons.
+                values.add(LEGACY_UNDYING.equals(id) ? OVERLOAD_PROTECTION : id);
             }
         }
         return values;
@@ -105,7 +110,9 @@ public record ResearchNoteData(
         ListTag listTag = tag.getList(key, Tag.TAG_STRING);
         for (Tag element : listTag) {
             if (element instanceof StringTag stringTag) {
-                values.add(stringTag.getAsString());
+                String value = stringTag.getAsString();
+                values.add("item.ae2lt.module_undying".equals(value)
+                        ? "item.ae2lt.module_overload_protection" : value);
             }
         }
         return values;

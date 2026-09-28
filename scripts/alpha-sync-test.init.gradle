@@ -1,0 +1,14 @@
+// Native regression suite for the 1.21.1 alpha synchronization; fixtures never enter release jars.
+allprojects {
+    afterEvaluate {
+        sourceSets.jdb.java.setIncludes(['**/ArmorProtectionGameTests.java', '**/OverloadedIOPortGameTests.java',
+                '**/CrystalCatalyzerFluidGameTests.java', '**/PigmeeCrystalCatalyzerGameTests.java',
+                '**/GlobalBatchAdaptersGameTests.java', '**/TianshuDeferredReturnsGameTests.java', '**/OverloadFactoryReactionGameTests.java'])
+        sourceSets.jdb.resources.srcDir 'src/overloadTest/resources'
+        minecraft.runs.gameTestServer {
+            property 'forge.enabledGameTestNamespaces', 'ae2lt_protection,ae2lt,ae2lt_catalyzer,ae2lt_global_batch,ae2lt_deferred,ae2lt_overload'
+            workingDirectory project.file('build/alpha-sync-forge')
+            mods { ae2lt { source sourceSets.jdb } }
+        }
+    }
+}

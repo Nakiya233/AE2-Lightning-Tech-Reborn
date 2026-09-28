@@ -215,24 +215,35 @@ public final class PigmeeCrystalCatalyzerGameTests {
     @GameTest(templateNamespace = "ae2lt_catalyzer", template = "empty", timeoutTicks = 900)
     public static void pigmeeOutputBackpressurePausesAndResumes(GameTestHelper helper) {
         var host = machine(helper);
+        require(host.getInventory().getSlotLimit(OUTPUT) == 64, "Pigmee output must hold only 64 items");
         int[] pausedAt = {-1};
         helper.runAfterDelay(20, () -> supply(host, 64, 1000));
         helper.runAfterDelay(60, () -> {
             require(host.getProcessingTicksSpent() > 0 && output(host) == 0, "fixture never started");
             pausedAt[0] = host.getProcessingTicksSpent();
-            host.getInventory().setItemDirect(OUTPUT, AEItems.CERTUS_QUARTZ_CRYSTAL.stack(1024));
+            // Older saves may exceed the new cap. Keep their contents available for extraction.
+            host.getInventory().setItemDirect(OUTPUT, AEItems.CERTUS_QUARTZ_CRYSTAL.stack(128));
+            var saved = new CompoundTag();
+            host.saveAdditional(saved);
+            host.clearContent();
+            host.loadTag(saved);
+            require(output(host) == 128, "lower output cap deleted legacy saved items");
+            require(!host.getInventory().canAcceptRecipeOutput(AEItems.CERTUS_QUARTZ_CRYSTAL.stack()),
+                    "legacy over-cap output accepted more items");
+            require(host.getAutomationInventory().extractItem(OUTPUT, 64, false).getCount() == 64,
+                    "legacy output could not be extracted down to the new cap");
         });
         helper.runAfterDelay(450, () -> {
             require(host.getProcessingTicksSpent() == pausedAt[0], "full output failed to pause progress");
-            require(host.getFluid().getAmount() == 1000 && output(host) == 1024, "blocked cycle spent resources");
+            require(host.getFluid().getAmount() == 1000 && output(host) == 64, "blocked cycle spent resources");
             var items = host.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.UP).orElse(null);
             require(items != null && items.extractItem(OUTPUT, 1, true).getCount() == 1,
                     "output simulation did not expose retained products");
-            require(output(host) == 1024, "simulated extraction changed ownership");
+            require(output(host) == 64, "simulated extraction changed ownership");
             require(items.extractItem(OUTPUT, 1, false).getCount() == 1, "output pipe extraction lost products");
         });
         helper.onEachTick(() -> {
-            if (helper.getTick() > 450 && output(host) == 1024) {
+            if (helper.getTick() > 450 && output(host) == 64) {
                 require(helper.getTick() >= 450 + 100 - pausedAt[0] - 1, "paused time accelerated the recipe");
                 require(host.getFluid().isEmpty() && host.getInventory().getStackInSlot(CATALYST).getCount() == 64,
                         "resumed cycle resource accounting failed");
@@ -261,8 +272,15 @@ public final class PigmeeCrystalCatalyzerGameTests {
             var restored = host.getLockedRecipe().orElseThrow();
             require(restored.recipeId().toString().equals("ae2lt:crystal_catalyzer/quartz_block")
                             && restored.totalEnergy() == 400_000 && host.getConsumedEnergy() == 0
-                            && restored.output().getCount() == 16,
-                    "legacy ID migration must preserve metadata and bypass FE at the machine");
+                            && restored.output().getCount() == 1,
+                    "legacy ID migration must preserve cost/progress, normalize yield and bypass FE");
+            var migratedSave = tag.copy();
+            migratedSave.remove("PigmeeBaseYield");
+            migratedSave.getCompound("LockedRecipe").putString("RecipeId", "ae2lt:crystal_catalyzer/quartz_block");
+            host.loadTag(migratedSave);
+            require(host.getLockedRecipe().orElseThrow().output().getCount() == 1
+                            && host.getProcessingTicksSpent() == progress,
+                    "already-migrated legacy snapshot revived the retired 16-item yield");
             tag.getCompound("LockedRecipe").putInt("Energy", 0);
             host.loadTag(tag);
             require(host.getProcessingTicksSpent() == progress

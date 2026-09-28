@@ -37,6 +37,32 @@ class MatrixCraftingClusterTest {
     private static final AEKey OUTPUT = new TestKey("diamond");
 
     @Test
+    void directReturnStillConsumesEnergyAndTheWholeTickBudget() {
+        var host = new FakeHost();
+        var energy = new FakeEnergy(256L);
+        var cluster = new MatrixCraftingCluster(
+                () -> true, List.of(() -> List.of(PATTERN)),
+                List.of(new FakeCraftCore(MatrixCraftingUnit.stableCore(), MatrixCraftingUnit.t1Threader())),
+                host, new FakeAssembler(), new CraftingCoreRegistry(), energy);
+        long capacity = cluster.getBatchCapacity(PATTERN);
+        var outputs = new KeyCounter();
+        assertEquals(0, cluster.pushBatch(PATTERN, emptyInputs(), capacity, returns -> {
+            for (var entry : returns) outputs.add(entry.getKey(), entry.getLongValue());
+            return true;
+        }));
+        assertEquals(capacity, energy.consumed);
+        assertEquals(capacity, outputs.get(OUTPUT));
+        assertEquals(0, cluster.threadsInFlight());
+        assertEquals(0, cluster.getBatchCapacity(PATTERN));
+        assertFalse(cluster.pushSingle(PATTERN, emptyInputs(), returns -> true));
+        assertTrue(cluster.isWorking());
+        host.time = 1;
+        assertTrue(cluster.isWorking(), "same-tick completion is still visible on the next controller tick");
+        host.time = 2;
+        assertFalse(cluster.isWorking());
+    }
+
+    @Test
     void aggregatesCraftingProfileFromCraftCores() {
         var cluster = cluster(List.of(
                 new FakeCraftCore(MatrixCraftingUnit.quantumCore(), MatrixCraftingUnit.t2Threader()),

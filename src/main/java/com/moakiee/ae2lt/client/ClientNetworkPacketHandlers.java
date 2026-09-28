@@ -104,7 +104,7 @@ public final class ClientNetworkPacketHandlers {
         ItemStack activationItem = switch (packet.stage()) {
             case RitualItemBurstPacket.PIGMEE_CORE -> new ItemStack(ModItems.PIGMEE_CORE.get());
             case RitualItemBurstPacket.UNDYING_MODULE ->
-                    new ItemStack(ModItems.CELESTWEAVE_SUBMODULE_UNDYING.get());
+                    new ItemStack(ModItems.CELESTWEAVE_SUBMODULE_OVERLOAD_PROTECTION.get());
             case RitualItemBurstPacket.PHASE_LOCK_MODULE ->
                     new ItemStack(ModItems.CELESTWEAVE_SUBMODULE_PHASE_LOCK.get());
             default -> ItemStack.EMPTY;

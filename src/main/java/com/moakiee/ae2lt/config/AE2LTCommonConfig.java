@@ -706,7 +706,7 @@ public final class AE2LTCommonConfig {
                     .comment("Ticks in the linear combo window for matrix shield lightning cost scaling.")
                     .defineInRange("shieldComboWindowTicks", 200, 1, 20 * 60 * 60);
             overloadArmorUndyingComboWindowTicks = builder
-                    .comment("Ticks in the linear combo window for undying FE and EHV cost scaling.")
+                    .comment("Legacy compatibility option; unused. Overload protection now shares a fixed 20-tick billing window and capped combo tiers.")
                     .defineInRange("undyingComboWindowTicks", 200, 1, 20 * 60 * 60);
             builder.pop();
             builder.pop();

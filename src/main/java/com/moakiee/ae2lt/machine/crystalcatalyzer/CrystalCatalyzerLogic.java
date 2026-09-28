@@ -21,7 +21,6 @@ public final class CrystalCatalyzerLogic extends AbstractGridRecipeMachineLogic<
 
     private static final long MAX_ENERGY_PER_TICK = 200_000L;
     public static final int PIGMEE_PROCESS_TICKS = 5 * 20;
-    public static final int PIGMEE_OUTPUT_COUNT = 1;
 
     private long lastPigmeeGameTime = Long.MIN_VALUE;
     private TickRateModulation lastPigmeeModulation = TickRateModulation.SLOWER;

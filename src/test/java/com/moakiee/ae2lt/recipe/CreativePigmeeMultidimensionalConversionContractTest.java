@@ -22,7 +22,7 @@ final class CreativePigmeeMultidimensionalConversionContractTest {
         assertTrue(conversion.contains(
                 "new ItemStack(ModItems.RAILGUN_MODULE_MULTIDIMENSIONAL_EXECUTION.get())"));
         assertTrue(conversion.contains(
-                "target.is(ModItems.CELESTWEAVE_SUBMODULE_PHASE_SHIELD.get())"));
+                "target.is(ModItems.CELESTWEAVE_SUBMODULE_OVERLOAD_PROTECTION.get())"));
         assertTrue(conversion.contains(
                 "new ItemStack(ModItems.CELESTWEAVE_SUBMODULE_MULTIDIMENSIONAL_PROTECTION.get())"));
         assertTrue(recipe.indexOf("PigmeeConversionLogic.createResult(target)")

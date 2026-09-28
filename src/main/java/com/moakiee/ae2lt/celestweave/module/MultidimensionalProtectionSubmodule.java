@@ -10,7 +10,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
-/** Free, combined Phase Shield and Undying behavior for the multidimensional tier. */
+/** Free unlimited shielding and last-stand protection for the multidimensional tier. */
 public final class MultidimensionalProtectionSubmodule extends AbstractCelestweaveArmorSubmodule {
     public static final MultidimensionalProtectionSubmodule INSTANCE =
             new MultidimensionalProtectionSubmodule();
@@ -46,7 +46,7 @@ public final class MultidimensionalProtectionSubmodule extends AbstractCelestwea
 
     @Override
     public Set<String> installGroupIds() {
-        return Set.of(ResistanceSubmodule.INSTALL_GROUP, UndyingSubmodule.INSTANCE.installGroupId());
+        return Set.of(ResistanceSubmodule.INSTALL_GROUP);
     }
 
     @Override

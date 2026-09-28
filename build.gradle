@@ -886,3 +886,36 @@ publishing {
 }
 tasks.withType(GenerateModuleMetadata).configureEach { enabled = false }
 tasks.withType(PublishToMavenLocal).configureEach { dependsOn tasks.named('reobfJarJar') }
+
+// AdvancedAE ships its recipe ingredient API inside its Jar-in-Jar library.
+// Expose that exact bundled version to the compiler without adding a runtime dependency.
+configurations { advancedAeRecipeApi { transitive = false } }
+dependencies { advancedAeRecipeApi "maven.modrinth:advancedae:${advancedae_version}" }
+def advancedAeRecipeApiJar = layout.buildDirectory.file('embedded-libraries/ae2addonlib.jar')
+def extractAdvancedAeRecipeApi = tasks.register('extractAdvancedAeRecipeApi') {
+    inputs.files(configurations.advancedAeRecipeApi)
+    outputs.file(advancedAeRecipeApiJar)
+    doLast {
+        def nested = zipTree(configurations.advancedAeRecipeApi.singleFile)
+                .matching { include 'META-INF/jarjar/ae2addonlib-*.jar' }.singleFile
+        def output = advancedAeRecipeApiJar.get().asFile
+        output.parentFile.mkdirs()
+        java.nio.file.Files.copy(nested.toPath(), output.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+    }
+}
+def advancedAeMcpMappings = tasks.register('advancedAeMcpMappings', net.minecraftforge.gradle.mcp.tasks.DownloadMCPMappings) {
+    mappings = "${mapping_channel}_${mapping_version}"
+    output = layout.buildDirectory.file('embedded-libraries/mcp-mappings.zip')
+}
+def remapAdvancedAeRecipeApi = tasks.register('remapAdvancedAeRecipeApi', net.minecraftforge.gradle.userdev.tasks.RenameJarSrg2Mcp) {
+    input = advancedAeRecipeApiJar
+    mappings = advancedAeMcpMappings.flatMap { it.output }
+    output = layout.buildDirectory.file('embedded-libraries/ae2addonlib-dev.jar')
+    signatureRemoval = true
+    dependsOn extractAdvancedAeRecipeApi
+}
+dependencies {
+    compileOnly files(remapAdvancedAeRecipeApi.flatMap { it.output })
+    testImplementation files(remapAdvancedAeRecipeApi.flatMap { it.output })
+    testImplementation(fg.deobf("maven.modrinth:advancedae:${advancedae_version}")) { transitive = false }
+}

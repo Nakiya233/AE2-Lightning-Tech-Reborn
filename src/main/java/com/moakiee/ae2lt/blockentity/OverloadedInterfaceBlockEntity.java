@@ -833,6 +833,7 @@ public class OverloadedInterfaceBlockEntity extends InterfaceBlockEntity
     private @Nullable Set<AEKey> importFilterKeys;
     private @Nullable FuzzyMode importFilterFuzzyMode;
     private boolean importFilterInverted;
+    private java.util.function.Predicate<AEKey> importFilterMatcher = key -> true;
     private @Nullable ExactImportPlan exactImportPlan;
     private boolean inductionCardCacheDirty = true;
     private boolean inductionCardInstalledCache = false;
@@ -974,6 +975,7 @@ public class OverloadedInterfaceBlockEntity extends InterfaceBlockEntity
 
     public void rebuildFilter() {
         exactImportPlan = null;
+        importFilterMatcher = key -> true;
         // 过滤器变动(无论是清空还是重填)都唤醒 IO:避免过滤器刚改完还卡在空转退避
         wakeWirelessIo();
         ItemStack filterStack = filterInv.getStackInSlot(0);
@@ -1002,6 +1004,8 @@ public class OverloadedInterfaceBlockEntity extends InterfaceBlockEntity
         importFilterKeys = Set.copyOf(keys);
         importFilterFuzzyMode = hasFuzzy ? cwi.getFuzzyMode(filterStack) : null;
         importFilterInverted = hasInverter;
+        importFilterMatcher = OverloadedFilterComponentItem.createMatcher(
+                importFilterKeys, importFilterFuzzyMode, importFilterInverted);
     }
 
     // ── Mode accessors ───────────────────────────────────────────────────
@@ -1801,22 +1805,7 @@ public class OverloadedInterfaceBlockEntity extends InterfaceBlockEntity
      * return items that are also configured for stocking).
      */
     public boolean isInsertAllowedByFilter(AEKey key) {
-        var keys = importFilterKeys;
-        if (keys == null || keys.isEmpty()) return true;
-        var fuzzyMode = importFilterFuzzyMode;
-        boolean matches;
-        if (fuzzyMode == null) {
-            matches = keys.contains(key);
-        } else {
-            matches = false;
-            for (var filterKey : keys) {
-                if (key.equals(filterKey) || key.fuzzyEquals(filterKey, fuzzyMode)) {
-                    matches = true;
-                    break;
-                }
-            }
-        }
-        return matches != importFilterInverted;
+        return importFilterMatcher.test(key);
     }
 
     // ── Export: ME.extract → remote wrapper.insert, overflow → buffer ────

@@ -18,6 +18,8 @@ import com.moakiee.ae2lt.crafting.matrix.core.CopyAssembler;
 import com.moakiee.ae2lt.crafting.matrix.core.CraftingCore;
 import com.moakiee.ae2lt.crafting.matrix.core.CraftingCoreHost;
 import com.moakiee.ae2lt.crafting.matrix.core.CraftingCoreRegistry;
+import com.moakiee.ae2lt.crafting.runtime.api.DeferredCraftingProvider;
+import org.jetbrains.annotations.Nullable;
 import com.moakiee.thunderbolt.api.crafting.batch.BatchDispatchMode;
 
 /**
@@ -44,6 +46,7 @@ public final class MatrixCraftingCluster {
     private int providerCallsRemaining;
     private long operationsConsumedThisTick;
     private long lastOperationsPerTick;
+    private long lastSuccessfulDispatchTick = Long.MIN_VALUE;
     private MatrixCraftingMath.Snapshot lastLimiterSnapshot = MatrixCraftingMath.idleSnapshot(0.0D, 0.0D);
 
     public MatrixCraftingCluster(BooleanSupplier formed,
@@ -125,14 +128,20 @@ public final class MatrixCraftingCluster {
      * on the shared engine. Inputs are a single-copy template.
      */
     public long pushBatch(IPatternDetails details, KeyCounter[] oneCopyTemplate, long maxCraft) {
+        return pushBatch(details, oneCopyTemplate, maxCraft, null);
+    }
+
+    public long pushBatch(IPatternDetails details, KeyCounter[] oneCopyTemplate, long maxCraft,
+                          @Nullable DeferredCraftingProvider.OutputSink returns) {
         if (!hasPattern(details)) return maxCraft;
         long copies = Math.min(maxCraft, getBatchCapacity(details));
         if (copies <= 0) return maxCraft;
         providerCallsRemaining--;
-        long accepted = engine.pushBatch(details, oneCopyTemplate, copies);
+        long accepted = engine.pushBatch(details, oneCopyTemplate, copies, returns);
         limiterRemaining = Math.max(0L, limiterRemaining - accepted);
         operationsConsumedThisTick = saturatedAdd(operationsConsumedThisTick, accepted);
         if (accepted > 0L) {
+            lastSuccessfulDispatchTick = host.getGameTime();
             energy.consumeOperations(accepted);
         }
         return maxCraft - accepted;
@@ -140,15 +149,21 @@ public final class MatrixCraftingCluster {
 
     /** Vanilla one-copy path through the matrix main core. */
     public boolean pushSingle(IPatternDetails details, KeyCounter[] oneCopyTemplate) {
+        return pushSingle(details, oneCopyTemplate, null);
+    }
+
+    public boolean pushSingle(IPatternDetails details, KeyCounter[] oneCopyTemplate,
+                              @Nullable DeferredCraftingProvider.OutputSink returns) {
         if (!hasPattern(details) || availableCapacity() <= 0 || providerCallsRemaining <= 0
                 || energy.affordableOperations(1L) < 1L) {
             return false;
         }
         providerCallsRemaining--;
-        long accepted = engine.pushBatch(details, oneCopyTemplate, 1L);
+        long accepted = engine.pushBatch(details, oneCopyTemplate, 1L, returns);
         limiterRemaining = Math.max(0L, limiterRemaining - accepted);
         operationsConsumedThisTick = saturatedAdd(operationsConsumedThisTick, accepted);
         if (accepted == 1L) {
+            lastSuccessfulDispatchTick = host.getGameTime();
             energy.consumeOperations(1L);
         }
         return accepted == 1L;
@@ -189,6 +204,14 @@ public final class MatrixCraftingCluster {
 
     public long threadsInFlight() {
         return engine.threadsInFlight();
+    }
+
+    public boolean isWorking() {
+        long now = host.getGameTime();
+        // CPU dispatch runs after the controller's tick. Preserve the activity indication through
+        // the next render-state publication even when direct delivery left no buffered threads.
+        return engine.threadsInFlight() > 0 || lastSuccessfulDispatchTick == now
+                || lastSuccessfulDispatchTick == now - 1;
     }
 
     public MatrixCraftingProfile craftingProfile() {
@@ -234,6 +257,7 @@ public final class MatrixCraftingCluster {
 
     public void readEngineFrom(CompoundTag tag, RegistryAccess registries) {
         engine.readFrom(tag, registries);
+        lastSuccessfulDispatchTick = Long.MIN_VALUE;
         heat = tag.contains(NBT_HEAT, Tag.TAG_DOUBLE) ? tag.getDouble(NBT_HEAT) : 0.0D;
         lastLimiterTick = tag.contains(NBT_LAST_LIMITER_TICK, Tag.TAG_LONG) ? tag.getLong(NBT_LAST_LIMITER_TICK) : Long.MIN_VALUE;
         limiterRemaining = 0;
@@ -248,6 +272,7 @@ public final class MatrixCraftingCluster {
     /** Clears only this linked runtime mirror after its state has been persisted by the controller. */
     public void suspendRuntime() {
         engine.suspend();
+        lastSuccessfulDispatchTick = Long.MIN_VALUE;
         heat = 0.0D;
         lastLimiterTick = Long.MIN_VALUE;
         limiterRemaining = 0;

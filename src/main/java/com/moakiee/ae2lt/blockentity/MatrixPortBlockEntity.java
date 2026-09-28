@@ -12,6 +12,8 @@ import java.util.UUID;
 import com.moakiee.ae2lt.block.MatrixPortBlock;
 import com.moakiee.thunderbolt.api.crafting.batch.IBatchCraftingProvider;
 import com.moakiee.thunderbolt.api.crafting.batch.BatchDispatchMode;
+import com.moakiee.thunderbolt.api.crafting.batch.BatchJobView;
+import com.moakiee.ae2lt.crafting.runtime.api.DeferredCraftingProvider;
 import com.moakiee.ae2lt.logic.craft.MatrixCraftingMath;
 import com.moakiee.ae2lt.logic.craft.MatrixCraftingProfile;
 import com.moakiee.ae2lt.api.tianshu.synthesis.TianshuSynthesizer;
@@ -47,7 +49,7 @@ import appeng.blockentity.grid.AENetworkBlockEntity;
 import appeng.me.helpers.MachineSource;
 
 public class MatrixPortBlockEntity extends AENetworkBlockEntity
-        implements IBatchCraftingProvider, TianshuSynthesizer {
+        implements IBatchCraftingProvider, TianshuSynthesizer, DeferredCraftingProvider {
     private static final String TAG_CONTROLLER_POS = "ControllerPos";
     private static final String TAG_FORMED = "Formed";
     private static final String TAG_CLUSTER = "Cluster";
@@ -358,6 +360,22 @@ public class MatrixPortBlockEntity extends AENetworkBlockEntity
     private SynthesisSubmission rememberSynthesis(UUID nonce, SynthesisSubmission submission) {
         externalSynthesisSubmissions.put(nonce, submission);
         return submission;
+    }
+
+    @Override
+    public long pushBatch(IPatternDetails details, KeyCounter[] oneCopyTemplate, long maxCraft,
+                          BatchJobView job) {
+        var controller = getController();
+        var returns = job instanceof DeferredCraftingProvider.Job deferred
+                ? deferred.deferredOutputSink() : null;
+        return controller != null
+                ? controller.pushBatch(details, oneCopyTemplate, maxCraft, returns) : maxCraft;
+    }
+
+    @Override
+    public boolean pushPattern(IPatternDetails patternDetails, KeyCounter[] inputHolder, OutputSink returns) {
+        var controller = getController();
+        return controller != null && controller.pushPattern(patternDetails, inputHolder, returns);
     }
 
     @Override

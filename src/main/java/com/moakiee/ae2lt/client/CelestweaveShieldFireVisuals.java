@@ -9,6 +9,7 @@ import net.minecraftforge.client.event.RenderBlockScreenEffectEvent;
 
 import com.moakiee.ae2lt.AE2LightningTech;
 import com.moakiee.ae2lt.celestweave.service.ArmorCapabilityCollector;
+import com.moakiee.ae2lt.celestweave.ArmorMitigationRules;
 import com.moakiee.ae2lt.device.capability.DeviceCapability;
 
 /** Hides vanilla fire visuals while an equipped Celestweave shield is active. */
@@ -30,6 +31,7 @@ public final class CelestweaveShieldFireVisuals {
             return false;
         }
         return ArmorCapabilityCollector.collectPerInstalledStack(player).stream()
-                .anyMatch(active -> active.capability() instanceof DeviceCapability.StagedMitigation);
+                .anyMatch(active -> active.capability() instanceof DeviceCapability.StagedMitigation staged
+                        && ArmorMitigationRules.extinguishesFire(staged.stage()));
     }
 }

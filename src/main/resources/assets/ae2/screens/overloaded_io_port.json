@@ -14,6 +14,14 @@
     ]
   },
   "slots": {
+    "AE2LT_OVERLOADED_IO_FILTER": {
+      "left": 66,
+      "top": 53
+    },
+    "AE2LT_OVERLOADED_IO_MATRIX": {
+      "left": 92,
+      "top": 53
+    },
     "MACHINE_INPUT": {
       "left": 19,
       "top": 17,
@@ -34,26 +42,22 @@
         "left": 8,
         "top": 6
       }
-    },
-    "rate": {
-      "text": "",
-      "position": {
-        "left": 57,
-        "top": 42
-      }
-    },
-    "status": {
-      "text": "",
-      "position": {
-        "left": 57,
-        "top": 55
-      }
+    }
+  },
+  "images": {
+    "filterSlotFrame": {
+      "texture": "ae2lt:textures/guis/overload_processing_factory.png",
+      "srcRect": [90, 59, 18, 18]
     }
   },
   "widgets": {
     "operationMode": {
       "left": 80,
       "top": 17
+    },
+    "lightningStatus": {
+      "left": 156,
+      "top": 4
     }
   }
 }

@@ -13,6 +13,8 @@ import net.minecraft.world.item.crafting.RecipeType;
  * Small bridge for 1.20.1's protected recipe-type map lookup.
  */
 public interface RecipeManagerByTypeAccess {
+    Object ae2lt$recipeSnapshot();
+
     <C extends Container, T extends Recipe<C>> Map<ResourceLocation, T> ae2lt$getByType(RecipeType<T> type);
 
     static <C extends Container, T extends Recipe<C>> Map<ResourceLocation, T> byType(

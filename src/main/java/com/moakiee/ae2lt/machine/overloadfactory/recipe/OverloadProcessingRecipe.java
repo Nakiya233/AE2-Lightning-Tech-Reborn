@@ -35,6 +35,8 @@ public final class OverloadProcessingRecipe implements Recipe<OverloadProcessing
     private final int priority;
     private final List<OverloadProcessingIngredient> itemInputs;
     private final FluidStack fluidInput;
+    // Only borrowed recipes use this predicate. They are never registered or serialized as LT recipes.
+    private final BorrowedFluidInput borrowedFluidInput;
     private final List<ItemStack> itemResults;
     private final FluidStack fluidResult;
     private final long totalEnergy;
@@ -52,6 +54,14 @@ public final class OverloadProcessingRecipe implements Recipe<OverloadProcessing
             long totalEnergy,
             int lightningCost,
             LightningKey.Tier lightningTier) {
+        this(id, priority, itemInputs, fluidInput, itemResults, fluidResult, totalEnergy,
+                lightningCost, lightningTier, null);
+    }
+
+    private OverloadProcessingRecipe(
+            ResourceLocation id, int priority, List<OverloadProcessingIngredient> itemInputs, FluidStack fluidInput,
+            List<ItemStack> itemResults, FluidStack fluidResult, long totalEnergy,
+            int lightningCost, LightningKey.Tier lightningTier, BorrowedFluidInput borrowedFluidInput) {
         this.id = Objects.requireNonNull(id, "id");
         Objects.requireNonNull(itemInputs, "itemInputs");
         Objects.requireNonNull(fluidInput, "fluidInput");
@@ -64,7 +74,7 @@ public final class OverloadProcessingRecipe implements Recipe<OverloadProcessing
         if (itemResults.size() > OverloadProcessingFactoryInventory.OUTPUT_SLOT_COUNT) {
             throw new IllegalArgumentException("itemResults must contain at most 1 entry");
         }
-        if (itemInputs.isEmpty() && fluidInput.isEmpty()) {
+        if (itemInputs.isEmpty() && fluidInput.isEmpty() && borrowedFluidInput == null) {
             throw new IllegalArgumentException("recipe must define at least one item or fluid input");
         }
         if (itemResults.isEmpty() && fluidResult.isEmpty()) {
@@ -83,12 +93,21 @@ public final class OverloadProcessingRecipe implements Recipe<OverloadProcessing
         this.priority = priority;
         this.itemInputs = List.copyOf(itemInputs);
         this.fluidInput = fluidInput.copy();
+        this.borrowedFluidInput = borrowedFluidInput;
         this.itemResults = itemResults.stream().map(ItemStack::copy).toList();
         this.fluidResult = fluidResult.copy();
         this.totalEnergy = totalEnergy;
         this.lightningCost = lightningCost;
         this.lightningTier = lightningTier;
         this.totalInputCount = this.itemInputs.stream().mapToInt(OverloadProcessingIngredient::count).sum();
+    }
+
+    /** Execution view of an upstream recipe; its original holder ID remains authoritative. */
+    public static OverloadProcessingRecipe borrowed(
+            ResourceLocation id, List<OverloadProcessingIngredient> inputs, BorrowedFluidInput fluid,
+            List<ItemStack> results, FluidStack fluidResult, long energy) {
+        return new OverloadProcessingRecipe(id, 0, inputs, FluidStack.EMPTY, results, fluidResult,
+                energy, 1, LightningKey.Tier.HIGH_VOLTAGE, fluid);
     }
 
     public int priority() {
@@ -101,6 +120,16 @@ public final class OverloadProcessingRecipe implements Recipe<OverloadProcessing
 
     public FluidStack fluidInput() {
         return fluidInput.copy();
+    }
+
+    public int inputFluidAmount() {
+        return borrowedFluidInput == null ? fluidInput.getAmount() : borrowedFluidInput.amount();
+    }
+
+    public List<FluidStack> fluidInputAlternatives() {
+        return borrowedFluidInput == null
+                ? (fluidInput.isEmpty() ? List.of() : List.of(fluidInput.copy()))
+                : java.util.Arrays.stream(borrowedFluidInput.getFluids()).map(FluidStack::copy).toList();
     }
 
     public List<ItemStack> itemResults() {
@@ -214,12 +243,15 @@ public final class OverloadProcessingRecipe implements Recipe<OverloadProcessing
         if (operations <= 0) {
             return false;
         }
-        if (fluidInput.isEmpty()) {
+        int amount = inputFluidAmount();
+        if (amount == 0) {
             return true;
         }
         return !availableFluid.isEmpty()
-                && FluidStackHelper.sameFluidAndTag(fluidInput, availableFluid)
-                && availableFluid.getAmount() >= multiplyExactToInt(fluidInput.getAmount(), operations);
+                && availableFluid.getAmount() >= (long) amount * operations
+                && (borrowedFluidInput == null
+                        ? FluidStackHelper.sameFluidAndTag(fluidInput, availableFluid)
+                        : borrowedFluidInput.ingredient().test(availableFluid));
     }
 
     public List<ItemStack> getScaledItemResults(int operations) {
@@ -278,7 +310,7 @@ public final class OverloadProcessingRecipe implements Recipe<OverloadProcessing
     public boolean isIncomplete() {
         return totalEnergy < MIN_TOTAL_ENERGY
                 || lightningCost <= 0
-                || (itemInputs.isEmpty() && fluidInput.isEmpty())
+                || (itemInputs.isEmpty() && fluidInput.isEmpty() && borrowedFluidInput == null)
                 || (itemResults.isEmpty() && fluidResult.isEmpty())
                 || itemInputs.stream().anyMatch(input -> input.ingredient().getItems().length == 0);
     }

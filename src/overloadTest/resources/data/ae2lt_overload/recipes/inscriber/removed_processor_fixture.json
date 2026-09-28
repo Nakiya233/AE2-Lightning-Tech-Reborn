@@ -1,0 +1,19 @@
+{
+  "type": "ae2:inscriber",
+  "mode": "press",
+  "ingredients": {
+    "top": {
+      "item": "ae2:printed_logic_processor"
+    },
+    "middle": {
+      "item": "minecraft:lapis_lazuli"
+    },
+    "bottom": {
+      "item": "ae2:printed_silicon"
+    }
+  },
+  "result": {
+    "count": 1,
+    "item": "minecraft:compass"
+  }
+}

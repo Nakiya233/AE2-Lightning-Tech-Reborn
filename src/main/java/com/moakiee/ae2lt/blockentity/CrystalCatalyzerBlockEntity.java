@@ -91,13 +91,14 @@ public class CrystalCatalyzerBlockEntity extends AENetworkBlockEntity
     private static final String TAG_CONSUMED_ENERGY = "ConsumedEnergy";
     private static final String TAG_PROCESSING_TICKS = "ProcessingTicks";
     private static final String TAG_LOCKED_RECIPE = "LockedRecipe";
+    private static final String TAG_PIGMEE_BASE_YIELD = "PigmeeBaseYield";
     private static final String TAG_AUTO_EXPORT = "AutoExport";
     private static final String TAG_ALLOWED_OUTPUTS = "AllowedOutputs";
     private static final String TAG_MODE = "Mode";
 
     public static final int ENERGY_CAPACITY = 1_000_000;
     public static final int FLUID_TANK_CAPACITY_MB = 16_000;
-    public static final int MATRIX_OUTPUT_MULTIPLIER = 4;
+    public static final int MATRIX_OUTPUT_MULTIPLIER = 8;
     /** Legacy default; explicit recipe fluids are also consumed once per cycle. */
     public static final int FIXED_FLUID_PER_CYCLE_MB = CrystalCatalyzerRecipe.DEFAULT_FLUID_PER_CYCLE_MB;
 
@@ -368,8 +369,7 @@ public class CrystalCatalyzerBlockEntity extends AENetworkBlockEntity
     }
 
     private ItemStack getMachineOutput(CrystalCatalyzerRecipeCandidate candidate) {
-        var output = candidate.recipe().getOutputTemplate();
-        return isPigmeeVariant() ? output.copyWithCount(CrystalCatalyzerLogic.PIGMEE_OUTPUT_COUNT) : output;
+        return candidate.recipe().getOutputTemplate();
     }
 
     public boolean canAcceptLockedRecipeOutput(CrystalCatalyzerLockedRecipe lockedRecipe) {
@@ -396,8 +396,8 @@ public class CrystalCatalyzerBlockEntity extends AENetworkBlockEntity
 
     private ItemStack getLockedRecipeOutputStack(CrystalCatalyzerLockedRecipe lockedRecipe) {
         ItemStack template = lockedRecipe.output();
-        // Apply the fixed Pigmee yield to older in-flight snapshots as well.
-        long outputCount = isPigmeeVariant() ? CrystalCatalyzerLogic.PIGMEE_OUTPUT_COUNT
+        // Pigmee keeps the recipe's base yield, without parallel or matrix scaling.
+        long outputCount = isPigmeeVariant() ? template.getCount()
                 : (long) template.getCount() * lockedRecipe.outputMultiplier();
         if (outputCount <= 0 || outputCount > Integer.MAX_VALUE) {
             return ItemStack.EMPTY;
@@ -771,6 +771,9 @@ public class CrystalCatalyzerBlockEntity extends AENetworkBlockEntity
         }
         data.put(TAG_ALLOWED_OUTPUTS, outputTags);
         data.putString(TAG_MODE, getMode().getSerializedName());
+        if (isPigmeeVariant()) {
+            data.putBoolean(TAG_PIGMEE_BASE_YIELD, true);
+        }
         if (lockedRecipe != null) {
             data.put(TAG_LOCKED_RECIPE, lockedRecipe.toTag());
         } else {
@@ -834,14 +837,22 @@ public class CrystalCatalyzerBlockEntity extends AENetworkBlockEntity
         } else {
             if (isPigmeeVariant()) {
                 // Earlier versions duplicated recipes under pigmee_* IDs. Keep an in-flight cycle
-                // and its output/progress while resolving it against the original shared recipe.
+                // and its progress while resolving the retired fixed yield against the shared recipe.
                 var id = lockedRecipe.recipeId();
                 var oldPrefix = "crystal_catalyzer/pigmee_";
                 if (id.getNamespace().equals("ae2lt") && id.getPath().startsWith(oldPrefix)) {
                     var sharedId = new ResourceLocation("ae2lt",
                             "crystal_catalyzer/" + id.getPath().substring(oldPrefix.length()));
-                    lockedRecipe = new CrystalCatalyzerLockedRecipe(sharedId, lockedRecipe.output(),
-                            lockedRecipe.energyPerCycle(), lockedRecipe.outputMultiplier(),
+                    // The retired pigmee_* recipes produced 16; retain their migration to one.
+                    lockedRecipe = new CrystalCatalyzerLockedRecipe(sharedId, lockedRecipe.output().copyWithCount(1),
+                            lockedRecipe.energyPerCycle(), 1,
+                            lockedRecipe.lightningCost(), lockedRecipe.lightningTier(), lockedRecipe.fluidInput());
+                }
+                if (!data.getBoolean(TAG_PIGMEE_BASE_YIELD)) {
+                    // Already-migrated saves may have a shared ID but still store the old 16-item
+                    // template; previous versions always clamped it to one at completion.
+                    lockedRecipe = new CrystalCatalyzerLockedRecipe(lockedRecipe.recipeId(),
+                            lockedRecipe.output().copyWithCount(1), lockedRecipe.energyPerCycle(), 1,
                             lockedRecipe.lightningCost(), lockedRecipe.lightningTier(), lockedRecipe.fluidInput());
                 }
                 consumedEnergy = 0L;

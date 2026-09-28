@@ -60,7 +60,7 @@ public final class ArmorModuleLightningPolicy {
     public static LightningCost triggeredCost(Trigger trigger) {
         return switch (trigger) {
             case MATRIX_SHIELD -> LightningCost.hv(1L);
-            case PHASE_SHIELD -> LightningCost.ehv(1L);
+            case PHASE_SHIELD -> LightningCost.ehv(ArmorOverloadRules.PHASE_SHIELD_COST_EHV_PER_DAMAGE);
             case UNDYING -> LightningCost.ehv(ArmorOverloadRules.UNDYING_TRIGGER_COST_EHV);
             default -> LightningCost.NONE;
         };

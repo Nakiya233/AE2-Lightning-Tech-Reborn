@@ -23,7 +23,7 @@ public final class ResearchNoteGenerator {
 
     public static final List<ResourceLocation> FIXED_RECIPE_ITEMS = List.of(
             item("pigmee_core"),
-            item("module_undying"),
+            item("module_overload_protection"),
             item("module_phase_lock"));
 
     private ResearchNoteGenerator() {

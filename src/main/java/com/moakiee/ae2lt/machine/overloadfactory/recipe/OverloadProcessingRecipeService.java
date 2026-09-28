@@ -1,31 +1,20 @@
 package com.moakiee.ae2lt.machine.overloadfactory.recipe;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.fluids.FluidStack;
 
 import com.moakiee.ae2lt.logic.FluidStackHelper;
 import com.moakiee.ae2lt.machine.overloadfactory.OverloadProcessingFactoryInventory;
 import com.moakiee.ae2lt.me.key.LightningKey;
-import com.moakiee.ae2lt.registry.ModRecipeTypes;
-import com.moakiee.ae2lt.util.RecipeManagerByTypeAccess;
 
 public final class OverloadProcessingRecipeService {
     public static final int EXTREME_TO_HIGH_RATIO = 4;
-
-    private static final Comparator<OverloadProcessingRecipe> RECIPE_ORDER = Comparator
-            .comparingInt(OverloadProcessingRecipe::priority)
-            .reversed()
-            .thenComparing(Comparator.comparingInt((OverloadProcessingRecipe recipe) -> recipe.itemInputs().size()).reversed())
-            .thenComparing(Comparator.comparingInt(OverloadProcessingRecipe::totalInputCount).reversed())
-            .thenComparing(recipe -> recipe.getId().toString());
 
     private static final Comparator<SelectionKey> SELECTION_KEY_ORDER = Comparator
             .comparingInt(SelectionKey::parallel).reversed()
@@ -34,38 +23,11 @@ public final class OverloadProcessingRecipeService {
             .thenComparing(Comparator.comparingInt(SelectionKey::totalInputCount).reversed())
             .thenComparing(SelectionKey::recipeId);
 
-    private static RecipeManager cachedRecipeManager;
-    private static List<OverloadProcessingRecipe> sortedRecipeCache;
-    private static int cachedRecipeOrderFingerprint;
-
     private OverloadProcessingRecipeService() {
     }
 
-    private static synchronized List<OverloadProcessingRecipe> getSortedRecipes(Level level) {
-        RecipeManager recipeManager = level.getRecipeManager();
-        var raw = RecipeManagerByTypeAccess.byType(recipeManager, ModRecipeTypes.OVERLOAD_PROCESSING_TYPE.get());
-        int orderFingerprint = computeRecipeOrderFingerprint(raw.values());
-        if (recipeManager != cachedRecipeManager
-                || orderFingerprint != cachedRecipeOrderFingerprint
-                || sortedRecipeCache == null) {
-            sortedRecipeCache = new ArrayList<>(raw.values());
-            sortedRecipeCache.sort(RECIPE_ORDER);
-            cachedRecipeManager = recipeManager;
-            cachedRecipeOrderFingerprint = orderFingerprint;
-        }
-        return sortedRecipeCache;
-    }
-
-    private static int computeRecipeOrderFingerprint(java.util.Collection<OverloadProcessingRecipe> recipes) {
-        int hash = 1;
-        for (var recipe : recipes) {
-            hash = 31 * hash + recipe.getId().hashCode();
-            hash = 31 * hash + System.identityHashCode(recipe);
-            hash = 31 * hash + recipe.priority();
-            hash = 31 * hash + recipe.itemInputs().size();
-            hash = 31 * hash + recipe.totalInputCount();
-        }
-        return hash;
+    private static List<OverloadProcessingRecipe> getSortedRecipes(Level level) {
+        return OverloadProcessingRecipeCatalog.recipes(level.getRecipeManager());
     }
 
     public static Optional<OverloadProcessingRecipeCandidate> findFirstProcessable(
@@ -145,10 +107,7 @@ public final class OverloadProcessingRecipeService {
             return Optional.empty();
         }
 
-        return RecipeManagerByTypeAccess.findById(
-                level.getRecipeManager(),
-                ModRecipeTypes.OVERLOAD_PROCESSING_TYPE.get(),
-                recipeId);
+        return OverloadProcessingRecipeCatalog.find(level.getRecipeManager(), recipeId);
     }
 
     public static Optional<OverloadProcessingRecipeCandidate> findLockedRecipeMatch(
@@ -170,6 +129,10 @@ public final class OverloadProcessingRecipeService {
 
         OverloadProcessingRecipeInput input = OverloadProcessingRecipeInput.fromInventory(inventory, inputFluid);
         if (input.isEmpty()) {
+            return Optional.empty();
+        }
+
+        if (!recipe.get().hasRequiredFluid(inputFluid, lockedRecipe.parallel())) {
             return Optional.empty();
         }
 
@@ -299,13 +262,11 @@ public final class OverloadProcessingRecipeService {
             return Optional.empty();
         }
 
-        FluidStack requiredInputFluid = recipe.fluidInput();
-        if (!requiredInputFluid.isEmpty()) {
-            if (input.inputFluid().isEmpty()
-                    || !FluidStackHelper.sameFluidAndTag(requiredInputFluid, input.inputFluid())) {
+        if (recipe.inputFluidAmount() > 0) {
+            if (!recipe.hasRequiredFluid(input.inputFluid(), 1)) {
                 return Optional.empty();
             }
-            upper = Math.min(upper, input.inputFluid().getAmount() / requiredInputFluid.getAmount());
+            upper = Math.min(upper, input.inputFluid().getAmount() / recipe.inputFluidAmount());
         }
 
         upper = Math.min(upper, maxLightningParallel(recipe, inventory, availableHighVoltage, availableExtremeHighVoltage));

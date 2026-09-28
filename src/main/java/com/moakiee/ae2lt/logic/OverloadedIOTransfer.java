@@ -15,7 +15,13 @@ public final class OverloadedIOTransfer {
 
     public static Result move(MEStorage source, MEStorage destination, AEKey key,
                               IActionSource actionSource, java.util.function.BooleanSupplier pay) {
-        long available = source.extract(key, Long.MAX_VALUE, Actionable.SIMULATE, actionSource);
+        return move(source, destination, key, actionSource, pay, Long.MAX_VALUE);
+    }
+
+    public static Result move(MEStorage source, MEStorage destination, AEKey key,
+                              IActionSource actionSource, java.util.function.BooleanSupplier pay, long cap) {
+        if (cap <= 0) return NONE;
+        long available = source.extract(key, cap, Actionable.SIMULATE, actionSource);
         if (available <= 0) return NONE;
         long accepted = destination.insert(key, available, Actionable.SIMULATE, actionSource);
         if (accepted <= 0) return NONE;

@@ -73,7 +73,14 @@ public final class ModDataComponents {
             if (tag == null || !tag.contains(nbtKey)) {
                 return null;
             }
-            return decode.apply(tag);
+            T value = decode.apply(tag);
+            if (value instanceof CelestweaveModuleContainer
+                    && CelestweaveModuleContainer.needsMigration(tag.getCompound(nbtKey))) {
+                var migrated = tag.copy();
+                encode.accept(migrated, value);
+                stack.setTag(migrated);
+            }
+            return value;
         }
 
         /** 读：key 缺失时返回 def。 */

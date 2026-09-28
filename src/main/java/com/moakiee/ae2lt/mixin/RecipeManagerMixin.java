@@ -15,6 +15,13 @@ import net.minecraft.world.item.crafting.RecipeType;
 
 @Mixin(RecipeManager.class)
 public abstract class RecipeManagerMixin implements RecipeManagerByTypeAccess {
+    @Shadow private Map<ResourceLocation, Recipe<?>> byName;
+
+    @Override
+    public Object ae2lt$recipeSnapshot() {
+        return byName;
+    }
+
     @Shadow
     protected abstract <C extends Container, T extends Recipe<C>> Map<ResourceLocation, T> byType(RecipeType<T> type);
 

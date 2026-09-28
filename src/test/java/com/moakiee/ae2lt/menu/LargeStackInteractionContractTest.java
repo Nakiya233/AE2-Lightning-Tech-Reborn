@@ -56,12 +56,12 @@ class LargeStackInteractionContractTest {
         }
 
         assertEquals(Set.of(
-                "MiningFactoryMenu.java",
                 "AtmosphericIonizerMenu.java",
                 "CrystalCatalyzerMenu.java",
                 "LightningAssemblyChamberMenu.java",
                 "LightningCollectorMenu.java",
                 "LightningSimulationChamberMenu.java",
+                "MiningFactoryMenu.java",
                 "OverloadProcessingFactoryMenu.java",
                 "TeslaCoilMenu.java"), menuNames);
 

@@ -4,7 +4,7 @@ import com.moakiee.ae2lt.AE2LightningTech;
 import net.minecraft.resources.ResourceLocation;
 
 /**
- * Registry aliases for IDs used before the Tianshu multiblock naming was finalized.
+ * Registry aliases for renamed blocks and items, including installed armor modules.
  *
  * <p>Aliases migrate world palettes and item stacks without keeping duplicate
  * compatibility blocks registered. IDs that already match the final names remain unchanged.</p>
@@ -21,6 +21,10 @@ public final class LegacyRegistryAliases {
             return;
         }
         registered = true;
+
+        ((net.minecraftforge.registries.ForgeRegistry<net.minecraft.world.item.Item>)
+                net.minecraftforge.registries.ForgeRegistries.ITEMS)
+                .addAlias(id("module_undying"), id("module_overload_protection"));
 
         aliasTianshuComputeUnits();
 

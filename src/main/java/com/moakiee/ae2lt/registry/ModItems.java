@@ -24,6 +24,7 @@ import com.moakiee.ae2lt.item.CelestweaveCoreItem;
 import com.moakiee.ae2lt.item.CelestweaveOculusItem;
 import com.moakiee.ae2lt.item.CelestweaveStrideItem;
 import com.moakiee.ae2lt.item.ClosedLoopPatternItem;
+import com.moakiee.ae2lt.item.OverloadProtectionSubmoduleItem;
 import com.moakiee.ae2lt.item.DashSubmoduleItem;
 import com.moakiee.ae2lt.item.DigAffinitySubmoduleItem;
 import com.moakiee.ae2lt.item.ExtendedOverloadedPatternProviderUpgradeItem;
@@ -46,7 +47,6 @@ import com.moakiee.ae2lt.item.ReflectSubmoduleItem;
 import com.moakiee.ae2lt.item.ResistanceSubmoduleItem;
 import com.moakiee.ae2lt.item.RisingItem;
 import com.moakiee.ae2lt.item.SaturationSubmoduleItem;
-import com.moakiee.ae2lt.item.UndyingSubmoduleItem;
 import com.moakiee.ae2lt.item.WaterBreathingSubmoduleItem;
 import com.moakiee.ae2lt.integration.ae2wtlib.TianshuWirelessTerminalFactory;
 import com.moakiee.ae2lt.item.railgun.ElectromagneticRailgunItem;
@@ -385,9 +385,9 @@ public final class ModItems {
             ReflectSubmoduleItem::new,
             new Item.Properties());
 
-    public static final RegistryObject<UndyingSubmoduleItem> CELESTWEAVE_SUBMODULE_UNDYING = registerItem(
-            "module_undying",
-            UndyingSubmoduleItem::new,
+    public static final RegistryObject<OverloadProtectionSubmoduleItem> CELESTWEAVE_SUBMODULE_OVERLOAD_PROTECTION = registerItem(
+            "module_overload_protection",
+            OverloadProtectionSubmoduleItem::new,
             new Item.Properties().rarity(Rarity.EPIC));
 
     public static final RegistryObject<MultidimensionalProtectionSubmoduleItem>

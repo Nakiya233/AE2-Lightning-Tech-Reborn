@@ -51,6 +51,21 @@ public record CelestweaveModuleContainer(
         return tag;
     }
 
+    /** Forge stores components as raw NBT, so persist legacy normalization on first access. */
+    public static boolean needsMigration(CompoundTag tag) {
+        if (tag.getCompound("toggles").contains("undying")
+                || tag.getCompound("submodule_data").contains("undying")) return true;
+        boolean overload = false;
+        boolean absorbedShield = false;
+        for (var entry : tag.getList("modules", Tag.TAG_COMPOUND)) {
+            String id = ((CompoundTag) entry).getString("id");
+            if (id.equals("ae2lt:module_undying")) return true;
+            overload |= id.equals("ae2lt:module_overload_protection");
+            absorbedShield |= id.equals("ae2lt:module_phase_shield") || id.equals("ae2lt:module_defense_matrix");
+        }
+        return overload && absorbedShield;
+    }
+
     public static CelestweaveModuleContainer load(CompoundTag tag) {
         Optional<UUID> armorId = tag.hasUUID("armor_id")
                 ? Optional.of(tag.getUUID("armor_id"))
@@ -80,9 +95,9 @@ public record CelestweaveModuleContainer(
     }
 
     public CelestweaveModuleContainer {
-        modules = copyModules(modules);
-        toggles = toggles == null ? Map.of() : Map.copyOf(toggles);
-        submoduleData = copySubmoduleData(submoduleData);
+        modules = ArmorModuleIdMigration.modules(copyModules(modules));
+        toggles = ArmorModuleIdMigration.toggles(toggles);
+        submoduleData = ArmorModuleIdMigration.data(copySubmoduleData(submoduleData));
     }
 
     @Override

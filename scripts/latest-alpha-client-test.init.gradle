@@ -1,4 +1,5 @@
 // Run only against the disposable world in build/forge-client-<probe>/saves/BackportQA.
+// For the JEI IO probe also pass -Penable_emi_runtime=false (EMI replaces the JEI runtime).
 // -Palpha_client_probe=mining|io|rainbow|phase; the probes replace test inventories and blocks.
 allprojects {
     afterEvaluate {
@@ -6,6 +7,16 @@ allprojects {
         def probes = [mining: 'MiningFactory', io: 'OverloadedIOPort', rainbow: 'RainbowPigmee', phase: 'PhaseFlight']
         if (!probes.containsKey(probe)) throw new GradleException('Unknown alpha client probe: ' + probe)
         sourceSets.jdb.java.setIncludes(probes.values().collect { '**/' + it + 'ClientProbe.java' })
+        if (probe == 'io') {
+            def result = project.file('build/forge-client-io/io-port-result.txt')
+            tasks.matching { it.name == 'runClient' }.configureEach {
+                doFirst { result.delete() }
+                doLast {
+                    if (!result.isFile() || result.text.trim() != 'PASS')
+                        throw new GradleException('IO client probe failed: ' + (result.isFile() ? result.text : 'no result'))
+                }
+            }
+        }
         minecraft.runs.client {
             workingDirectory project.file('build/forge-client-' + probe)
             property 'ae2lt.' + [mining: 'mining', io: 'io', rainbow: 'rainbow', phase: 'phase'][probe] + 'ClientProbe', 'true'

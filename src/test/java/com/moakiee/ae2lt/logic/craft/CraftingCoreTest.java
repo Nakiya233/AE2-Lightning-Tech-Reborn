@@ -2,6 +2,7 @@ package com.moakiee.ae2lt.logic.craft;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
@@ -33,6 +34,61 @@ import appeng.blockentity.crafting.IMolecularAssemblerSupportedPattern;
 import com.moakiee.thunderbolt.core.crafting.batch.SharedBatchInputPattern;
 
 class CraftingCoreTest {
+    @Test
+    void directReturnsTransferOutputsAndSharedCatalystWithoutFiveTickBuffer() {
+        var host = new FakeHost(100);
+        var registry = new CraftingCoreRegistry();
+        var output = key("diamond");
+        var catalyst = key("catalyst");
+        var bucket = key("bucket");
+        CopyAssembler assembler = (pattern, inputs) -> new CopyAssembler.AssembledCopy(
+                output, 2, List.of(stack(bucket, 1)), List.of(stack(catalyst, 1)));
+        var core = new CraftingCore(host, assembler, registry);
+        var queued = new KeyCounter();
+
+        assertEquals(7, core.pushBatch(new FakePattern(), inputs(key("stick"), 1), 7, outputs -> {
+            for (var entry : outputs) queued.add(entry.getKey(), entry.getLongValue());
+            return true;
+        }));
+
+        assertEquals(14, queued.get(output));
+        assertEquals(7, queued.get(bucket));
+        assertEquals(1, queued.get(catalyst));
+        assertEquals(0, core.threadsInFlight());
+        assertTrue(host.network.isEmpty());
+        host.time = 105;
+        registry.tickAll();
+        assertTrue(host.network.isEmpty(), "transferred output cannot also be flushed by the matrix");
+    }
+
+    @Test
+    void rejectedDirectReturnFallsBackToPersistedMatrixBuffer() {
+        var host = new FakeHost(100);
+        var output = key("diamond");
+        var core = new CraftingCore(host, new FakeAssembler(output, 1), new CraftingCoreRegistry());
+        assertEquals(3, core.pushBatch(new FakePattern(), inputs(key("stick"), 1), 3, outputs -> false));
+        assertEquals(3, core.threadsInFlight());
+        host.time = 105;
+        core.sweepTick();
+        assertEquals(3, host.network.getLong(output));
+    }
+
+    @Test
+    void directReturnNeverIncludesAnOlderNetworksBufferedBatch() {
+        var host = new FakeHost(100);
+        var output = key("diamond");
+        var core = new CraftingCore(host, new FakeAssembler(output, 1), new CraftingCoreRegistry());
+        core.pushBatch(new FakePattern(), inputs(key("stick"), 1), 2);
+        core.pushBatch(new FakePattern(), inputs(key("stick"), 1), 3, outputs -> {
+            assertEquals(3, outputs.get(output));
+            return true;
+        });
+        assertEquals(2, core.threadsInFlight());
+        host.time = 105;
+        core.sweepTick();
+        assertEquals(2, host.network.getLong(output));
+    }
+
     @Test
     void assemblesOnceAndFlushesAtTheNextFiveTickBoundary() {
         var host = new FakeHost(100);

@@ -14,6 +14,8 @@ import com.moakiee.ae2lt.client.OverloadedIOPortScreen;
 import com.moakiee.ae2lt.integration.jei.category.LightningAssemblyCategory;
 import com.moakiee.ae2lt.menu.OverloadedIOPortMenu;
 import com.moakiee.ae2lt.registry.ModBlocks;
+import com.moakiee.ae2lt.registry.ModItems;
+import com.moakiee.ae2lt.item.OverloadedFilterComponentItem;
 import mezz.jei.api.*;
 import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.Minecraft;
@@ -21,6 +23,8 @@ import net.minecraft.client.Screenshot;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.api.distmarker.Dist;
@@ -58,11 +62,18 @@ public final class OverloadedIOPortClientProbe implements IModPlugin {
                         level.setBlockAndUpdate(POS.below(),AEBlocks.CREATIVE_ENERGY_CELL.block().defaultBlockState());
                         var player=server.getPlayerList().getPlayer(mc.player.getUUID());player.setGameMode(GameType.CREATIVE);player.getAbilities().flying=true;player.onUpdateAbilities();
                         player.teleportTo(level,0.5,101,3.5,Set.of(),180,25);player.getInventory().clearContent();
+                        var filter=new ItemStack(ModItems.OVERLOADED_FILTER_COMPONENT.get());
+                        ((OverloadedFilterComponentItem)filter.getItem()).getConfigInventory(filter).setStack(0,
+                                new appeng.api.stacks.GenericStack(AEItemKey.of(Items.STONE),1));
+                        player.getInventory().setItem(0,filter);
+                        player.getInventory().setItem(1,new ItemStack(ModItems.LIGHTNING_COLLAPSE_MATRIX.get(),64));
                     });
                 }
                 case 1->{
+                    // A development window can lose focus while the integrated server loads.
+                    if (mc.screen instanceof net.minecraft.client.gui.screens.PauseScreen) mc.setScreen(null);
                     if (jei == null || mc.screen != null || !(mc.level.getBlockEntity(POS) instanceof OverloadedIOPortBlockEntity)) {
-                        require(ticks < 1200, "Waiting for client IO block: " + mc.level.getBlockState(POS));
+                        require(ticks < 1200, "Waiting for client IO block: " + mc.level.getBlockState(POS) + ", screen=" + mc.screen + ", jei=" + (jei != null));
                         return;
                     }
                     new OverloadedIOPortScreen(new OverloadedIOPortMenu(99, mc.player.getInventory(),
@@ -80,15 +91,25 @@ public final class OverloadedIOPortClientProbe implements IModPlugin {
                 case 2->{
                     require(mc.screen instanceof OverloadedIOPortScreen,"screen binding failed: "+mc.screen + ", menu=" + mc.player.containerMenu + ", client=" + mc.level.getBlockState(POS));
                     var menu=(OverloadedIOPortMenu)mc.player.containerMenu;require(menu.transferInterval==1,"server rate not synchronized");
-                    require(menu.slots.size()==53,"six inputs, six outputs, five upgrades and inventory");
+                    require(menu.slots.size()==55,"six inputs, six outputs, filter, matrix, five upgrades and inventory");
+                    require(menu.batchLimit==1 && menu.transferCap==32768,"base throughput not synchronized");
                     capture("overloaded-io-empty.png");
+                    var playerFilter=menu.slots.stream().filter(s->s.getItem().is(ModItems.OVERLOADED_FILTER_COMPONENT.get())).findFirst().orElseThrow();
+                    mc.gameMode.handleInventoryMouseClick(menu.containerId,playerFilter.index,0,ClickType.QUICK_MOVE,mc.player);
+                    var playerMatrices=menu.slots.stream().filter(s->s.getItem().is(ModItems.LIGHTNING_COLLAPSE_MATRIX.get())).findFirst().orElseThrow();
+                    mc.gameMode.handleInventoryMouseClick(menu.containerId,playerMatrices.index,0,ClickType.QUICK_MOVE,mc.player);
                     var screen=(OverloadedIOPortScreen)mc.screen;
                     screen.mouseClicked(screen.getGuiLeft()+88,screen.getGuiTop()+25,0);
                 }
                 case 3->{
                     require(((OverloadedIOPortMenu)mc.player.containerMenu).operation==OperationMode.FILL,"operation button packet failed");
+                    var menu=(OverloadedIOPortMenu)mc.player.containerMenu;
+                    require(menu.batchLimit==16 && menu.transferCap==Long.MAX_VALUE,"matrix throughput not synchronized");
+                    capture("overloaded-io-filter-matrix.png");
                     server(()->{
                         var be=(OverloadedIOPortBlockEntity)mc.getSingleplayerServer().overworld().getBlockEntity(POS);
+                        require(be.getFilterInventory().getStackInSlot(0).is(ModItems.OVERLOADED_FILTER_COMPONENT.get()),"shift-click did not route component to filter slot");
+                        require(be.getMatrixCount()==16,"matrix shift-click must fill exactly 16, not one or 64");
                         be.getConfigManager().putSetting(Settings.OPERATION_MODE,OperationMode.EMPTY);
                         var stack=AEItems.ITEM_CELL_256K.stack();var storage=StorageCells.getCellInventory(stack,null);
                         storage.insert(AEItemKey.of(Items.STONE),1_000_000,Actionable.MODULATE,IActionSource.empty());storage.persist();
@@ -98,6 +119,11 @@ public final class OverloadedIOPortClientProbe implements IModPlugin {
                 case 4->{
                     require(((OverloadedIOPortMenu)mc.player.containerMenu).status==OverloadedIOPortBlockEntity.Status.BLOCKED,"blocked status missing");
                     capture("overloaded-io-blocked.png");
+                    var menu=mc.player.containerMenu;
+                    var installed=menu.slots.stream().filter(s->s.getItem().is(ModItems.OVERLOADED_FILTER_COMPONENT.get())).findFirst().orElseThrow();
+                    mc.gameMode.handleInventoryMouseClick(menu.containerId,installed.index,0,ClickType.QUICK_MOVE,mc.player);
+                    var installedMatrices=menu.slots.stream().filter(s->s.getItem().is(ModItems.LIGHTNING_COLLAPSE_MATRIX.get()) && s.getItem().getCount()==16).findFirst().orElseThrow();
+                    mc.gameMode.handleInventoryMouseClick(menu.containerId,installedMatrices.index,0,ClickType.QUICK_MOVE,mc.player);
                     require(jei!=null,"JEI unavailable");
                     var manager=jei.getRecipeManager();var recipes=manager.createRecipeLookup(LightningAssemblyCategory.TYPE).get()
                             .filter(r->r.getResultItem(mc.level.registryAccess()).is(ModBlocks.OVERLOADED_IO_PORT.get().asItem())).toList();
@@ -107,12 +133,24 @@ public final class OverloadedIOPortClientProbe implements IModPlugin {
                 }
                 case 5->{
                     capture("overloaded-io-jei.png");
-                    System.out.println("IO_PORT_QA PASS: native cell backgrounds, 53 slots, 1 type/t synchronization, operation button packet, blocked status, JEI recipe layout.");
-                    done=true;mc.setScreen(null);mc.stop();
+                    server(()->{
+                        var be=(OverloadedIOPortBlockEntity)mc.getSingleplayerServer().overworld().getBlockEntity(POS);
+                        var player=mc.getSingleplayerServer().getPlayerList().getPlayer(mc.player.getUUID());
+                        require(be.getFilterInventory().isEmpty() && player.getInventory().countItem(ModItems.OVERLOADED_FILTER_COMPONENT.get())==1,"shift-click removal must return one component");
+                        require(be.getMatrixInventory().isEmpty() && player.getInventory().countItem(ModItems.LIGHTNING_COLLAPSE_MATRIX.get())==64,"matrix shift-click removal must conserve all 64 matrices");
+                    });
+                }
+                case 6->{
+                    System.out.println("IO_PORT_QA PASS: native cell/filter/matrix backgrounds, 55 slots, filter and 16-matrix shift-click insertion/removal, 1-to-16 attempt and long-cap synchronization, operation button packet, lightning status, JEI recipe layout.");
+                    result("PASS");done=true;mc.setScreen(null);mc.stop();
                 }
             }
             phase++;
-        }catch(Throwable t){t.printStackTrace();System.out.println("IO_PORT_QA FAIL phase="+phase+": "+t);done=true;mc.setScreen(null);mc.stop();}
+        }catch(Throwable t){t.printStackTrace();System.out.println("IO_PORT_QA FAIL phase="+phase+": "+t);result("FAIL: " + t);done=true;mc.setScreen(null);mc.stop();}
+    }
+    private static void result(String value) {
+        try { java.nio.file.Files.writeString(Minecraft.getInstance().gameDirectory.toPath().resolve("io-port-result.txt"), value); }
+        catch (java.io.IOException failure) { throw new RuntimeException(failure); }
     }
     private static void server(Runnable r){Minecraft.getInstance().getSingleplayerServer().execute(()->{try{r.run();}catch(Throwable t){failure=t;}});}
     private static void capture(String name){var mc=Minecraft.getInstance();Screenshot.grab(mc.gameDirectory,name,mc.getMainRenderTarget(),m->{});}

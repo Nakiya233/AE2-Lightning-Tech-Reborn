@@ -30,6 +30,13 @@ public final class RecipeSerializationHelper {
         if (count <= 0) {
             throw new JsonSyntaxException("Item stack count must be positive");
         }
+        if (json.has("nbt")) {
+            JsonObject nativeStack = json.deepCopy();
+            nativeStack.add("item", json.get("id"));
+            ItemStack result = net.minecraftforge.common.crafting.CraftingHelper.getItemStack(nativeStack, true);
+            result.setCount(count);
+            return result;
+        }
         return new ItemStack(item, count);
     }
 

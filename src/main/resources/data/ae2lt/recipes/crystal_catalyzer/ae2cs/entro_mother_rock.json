@@ -1,0 +1,28 @@
+{
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "ae2cs"
+    },
+    {
+      "type": "forge:item_exists",
+      "item": "ae2cs:entro_mother_rock"
+    },
+    {
+      "type": "forge:mod_loaded",
+      "modid": "extendedae"
+    }
+  ],
+  "type": "ae2lt:crystal_catalyzer",
+  "catalyst": {
+    "item": "ae2cs:entro_mother_rock"
+  },
+  "catalystCount": 1,
+  "output": {
+    "id": "extendedae:entro_crystal",
+    "count": 8
+  },
+  "energyPerCycle": 100000,
+  "lightningCost": 1,
+  "lightningTier": "high_voltage"
+}

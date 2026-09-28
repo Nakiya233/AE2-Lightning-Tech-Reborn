@@ -19,7 +19,7 @@ item_ids:
   - ae2lt:module_matrix_shield
   - ae2lt:module_phase_shield
   - ae2lt:module_reflect
-  - ae2lt:module_undying
+  - ae2lt:module_overload_protection
   - ae2lt:module_multidimensional_protection
   - ae2lt:module_purification
   - ae2lt:module_radiation_protection
@@ -81,17 +81,19 @@ If FE or required Lightning is missing, the affected effects cannot be maintaine
 |--------|--------|
 | Reach Extension | Adds block / entity interaction range; configurable as 1x, 2x or 4x |
 | Matrix Shield | Cancels environmental damage and extinguishes fire, reduces ordinary damage by about 80%, and reduces hard damage by about 50% |
-| Phase Shield | Blocks incoming damage completely and extinguishes fire, spending Extreme High Voltage Lightning based on prevented damage |
+| Phase Shield | Absorbs up to 1024 damage per hit at 20,000 FE and 2 EHV per point. Covered hits are cancelled; excess damage passes through. Does not counter mechanisms or extinguish fire |
 | Reflect | Reflects up to 30% of attacker damage, spending FE and High Voltage Lightning |
-| Undying | Intercepts fatal damage, spending large amounts of FE and Extreme High Voltage Lightning |
-| Multidimensional Protection | Combines complete Phase Shield cancellation with the Undying fallback; neither path consumes FE or Lightning |
+| Overload Protection | Upgrades Phase Shield with unlimited shielding and last-stand protection, sharing a 20 GFE and 16,384 EHV cost cap per 20 ticks |
+| Multidimensional Protection | Unlimited shielding and last-stand protection; neither path consumes FE or Lightning |
 | Purification | Removes and blocks configured status effects; by default, harmful effects only |
 | Radiation Assimilation | Prevents new exposure and radiation damage; while ambient radiation is present, restores 1-5 hearts per second depending on radiation severity |
 | Laser Protection | Absorbs Mekanism lasers completely and converts the actually absorbed Joules to FE using Mekanism's configured conversion ratio, filling the chestplate and then the rest of the equipped set |
 | Phase Lock | Provides four independently toggled features: Armor Lock, Flight Lock, Block External Forces and Block External Teleports; see below |
 | Overload Core Module | Unlocks Lightning compensation for the armor set. Existing Extreme High Voltage Lightning is consumed first, then any shortfall is paid at 16 High Voltage Lightning per Extreme High Voltage Lightning |
 
-Multidimensional Protection conflicts with Matrix Shield, Phase Shield and Undying. None of those four modules can be installed together on the same chestplate.
+Matrix Shield, Phase Shield, Overload Protection and Multidimensional Protection share one exclusive installation group. Overload Protection is crafted from Phase Shield; its Pigmee conversion produces Multidimensional Protection.
+
+Legacy Undying modules convert to Overload Protection, preserving toggles, options and last-stand combo state. If a legacy chestplate also contains Phase or Matrix Shield, the upgraded protection absorbs those installed lower tiers. Loose shield items in inventories are unaffected.
 
 ### Phase Lock
 
@@ -126,4 +128,4 @@ Both flight modules share vanilla-style controls: tap Jump in midair to deploy t
 
 ## Cost Notes
 
-Most active modules consume 1 High Voltage Lightning per tick in addition to their FE drain. Creative Flight and Phase Flight use more High Voltage Lightning while moving; active Phase Mode traversal uses Extreme High Voltage Lightning instead. Shield, Purification and Undying costs increase when they trigger repeatedly in a short time. Installing an Overload Core Module in the chestplate allows the whole set to compensate missing Extreme High Voltage Lightning at 16 High Voltage Lightning per Extreme High Voltage Lightning.
+Most active modules consume 1 High Voltage Lightning per tick in addition to their FE drain. Creative Flight and Phase Flight use more High Voltage Lightning while moving; active Phase Mode traversal uses Extreme High Voltage Lightning instead. Matrix Shield and Purification costs increase on repeated triggers. Phase and Overload shields pay only increases to the highest hit in a fixed 20-tick window. Phase costs at most 20,480,000 FE and 2,048 EHV per window. Overload shielding still costs 20,000 FE and 2 EHV per damage, paying only increases to the highest hit within a fixed 20-tick window. Damage fees always stop at 2 GFE and 1,024 EHV and never advance the death combo. Only deaths raise the tier: death n in the window costs up to min(2n GFE, 20 GFE) and min(1024n EHV, 16,384 EHV), charged at that tier's cap. Shielding and last stand share paid credit and only pay differences: a fully paid damage cap covers the first death for free, while the second death tops up to 4 GFE and 2,048 EHV. Higher death tiers never raise the damage cap. Repeated callbacks for one attack and same-tick reentry through forced-death hooks do not charge twice. FE reaches its cap at death tier 10 and EHV at tier 16; protection continues without further trigger costs after both caps are paid. Triggers do not extend the window; paid credit and the death combo reset after 20 ticks. Installing an Overload Core Module in the chestplate allows the whole set to compensate missing Extreme High Voltage Lightning at 16 High Voltage Lightning per Extreme High Voltage Lightning.

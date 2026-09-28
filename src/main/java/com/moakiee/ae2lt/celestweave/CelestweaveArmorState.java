@@ -369,7 +369,10 @@ public final class CelestweaveArmorState {
         boolean dedicatedServer = dist == Dist.DEDICATED_SERVER && player instanceof ServerPlayer;
         for (var entry : installedSubmodules) {
             var submodule = entry.submodule();
-            boolean active = hasCore && isSubmoduleEnabled(armor, submodule);
+            boolean active = hasCore && isSubmoduleEnabled(armor, submodule)
+                    && (isModulesPowered(armor) || (player != null
+                            && ShieldChargeWindow.remainsActiveWithoutPassivePower(
+                                    armor, submodule.id(), player.level().getGameTime())));
             // Runtime map holds only active entries, so absent (null) means previously inactive.
             Boolean previous = setSubmoduleRuntimeActive(armor, submodule.id(), active);
             boolean changed = (previous != null && previous) != active;
@@ -491,13 +494,15 @@ public final class CelestweaveArmorState {
     /**
      * Client-side active derivation. Core + toggle live on the synced stack, and the
      * server publishes its energy-based forced-off state via {@link #isModulesPowered}, so no
-     * client cache or per-submodule sync packet is required. Callers iterate equipped armor,
+     * client cache or per-submodule sync packet is required. Paid protection windows and the
+     * free multidimensional tier remain active after depletion. Callers iterate equipped armor,
      * so being in an armor slot already implies "equipped".
      */
-    public static boolean isSubmoduleActiveClient(ItemStack armor, CelestweaveArmorSubmodule submodule) {
+    public static boolean isSubmoduleActiveClient(ItemStack armor, CelestweaveArmorSubmodule submodule, long gameTime) {
         return submodule != null
                 && ArmorPersistentData.hasStructuralCore(armor)
-                && isModulesPowered(armor)
+                && (isModulesPowered(armor)
+                        || ShieldChargeWindow.remainsActiveWithoutPassivePower(armor, submodule.id(), gameTime))
                 && isSubmoduleEnabled(armor, submodule);
     }
 

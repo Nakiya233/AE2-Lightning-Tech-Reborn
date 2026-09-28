@@ -468,10 +468,10 @@ public class OverloadProcessingFactoryBlockEntity extends AENetworkBlockEntity
             }
         }
 
-        FluidStack requiredInputFluid = candidate.recipe().fluidInput();
+        var recipe = candidate.recipe();
         int inputFluidCost = 0;
-        if (!requiredInputFluid.isEmpty()) {
-            long scaledInputFluidCost = (long) requiredInputFluid.getAmount() * candidate.parallel();
+        if (recipe.inputFluidAmount() > 0) {
+            long scaledInputFluidCost = (long) recipe.inputFluidAmount() * candidate.parallel();
             if (scaledInputFluidCost > Integer.MAX_VALUE) {
                 return false;
             }
@@ -479,9 +479,7 @@ public class OverloadProcessingFactoryBlockEntity extends AENetworkBlockEntity
         }
         if (inputFluidCost > 0) {
             FluidStack currentInput = inputTank.getFluid();
-            if (currentInput.isEmpty()
-                    || !FluidStackHelper.sameFluidAndTag(requiredInputFluid, currentInput)
-                    || currentInput.getAmount() < inputFluidCost) {
+            if (!recipe.hasRequiredFluid(currentInput, candidate.parallel())) {
                 return false;
             }
         }

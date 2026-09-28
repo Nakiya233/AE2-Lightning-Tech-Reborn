@@ -34,7 +34,7 @@ final class ShieldIncomingDamageContractTest {
         assertTrue(incoming.contains("IncomingDamageResult.pass(afterMitigation)"));
         assertTrue(incoming.contains("IncomingDamageResult.cancel()"));
         int payment = incoming.indexOf("payMitigationLightning");
-        int paidCancellation = incoming.indexOf("return IncomingDamageResult.cancel()", payment);
+        int paidCancellation = incoming.indexOf("return new IncomingDamageResult(\"phase_shield\".equals(staged.stage()) ? incoming : 0.0F, true)", payment);
         assertTrue(payment >= 0 && paidCancellation > payment);
     }
 

@@ -330,7 +330,7 @@ public class AE2LightningTech {
                         acceptCreative(output, ModItems.CELESTWEAVE_SUBMODULE_MATRIX_SHIELD);
                         acceptCreative(output, ModItems.CELESTWEAVE_SUBMODULE_PHASE_SHIELD);
                         acceptCreative(output, ModItems.CELESTWEAVE_SUBMODULE_REFLECT);
-                        acceptCreative(output, ModItems.CELESTWEAVE_SUBMODULE_UNDYING);
+                        acceptCreative(output, ModItems.CELESTWEAVE_SUBMODULE_OVERLOAD_PROTECTION);
                         acceptCreative(output, ModItems.CELESTWEAVE_SUBMODULE_MULTIDIMENSIONAL_PROTECTION);
                         acceptCreative(output, ModItems.CELESTWEAVE_SUBMODULE_PURIFICATION);
                         acceptCreative(output, ModItems.CELESTWEAVE_SUBMODULE_RADIATION_PROTECTION);

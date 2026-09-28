@@ -212,6 +212,82 @@ class RequesterOutputDeliveryTest {
     }
 
     @Test
+    void deferredStandaloneOutputCannotBeRecapturedWhileOtherCopiesAreStillWaiting() throws Exception {
+        var fixture = new Fixture(16, true, false);
+        fixture.receiveDirect(8);
+        fixture.flushDirect();
+        assertEquals(8, fixture.remaining());
+        assertEquals(8, fixture.waiting(OUTPUT));
+        assertEquals(8, fixture.disk.stored);
+        assertEquals(0, fixture.directRemainder());
+        fixture.receiveDirect(8);
+        fixture.flushDirect();
+        assertTrue(fixture.link.completed);
+        assertEquals(16, fixture.disk.stored);
+    }
+
+    @Test
+    void blockedDirectStandaloneOutputStaysSeparateFromCraftingInventory() throws Exception {
+        var fixture = new Fixture(16, true, false);
+        fixture.disk.capacity = 0;
+        fixture.receiveDirect(8);
+        for (int i = 0; i < 5; i++) {
+            fixture.flushDirect();
+            fixture.flush();
+        }
+        assertEquals(8, fixture.remaining());
+        assertEquals(8, fixture.waiting(OUTPUT));
+        assertEquals(8, fixture.directRemainder());
+        assertEquals(0, fixture.held());
+        fixture.disk.capacity = 16;
+        fixture.flushDirect();
+        assertEquals(8, fixture.remaining());
+        assertEquals(8, fixture.disk.stored);
+        assertEquals(0, fixture.directRemainder());
+    }
+
+    @Test
+    void cancellationBeforeDrainReturnsPhysicalOutputWithoutCreditingOldJob() throws Exception {
+        var fixture = new Fixture(16, true, false);
+        fixture.logic.cancel();
+        fixture.receiveDirect(8);
+        fixture.flushDirect();
+        assertFalse(fixture.logic.hasJob());
+        assertEquals(16, fixture.remaining());
+        assertEquals(8, fixture.disk.stored);
+        assertEquals(0, fixture.directRemainder());
+    }
+
+    @Test
+    void deferredOutputFromOldJobCannotSatisfyAReplacementJobWithTheSameKey() throws Exception {
+        var old = new Fixture(16, true, false);
+        var replacement = new Fixture(16, true, false);
+        old.logic.cancel();
+        field(old.logic, "job").set(old.logic, replacement.job);
+        old.receiveDirect(8);
+        old.flushDirect();
+        assertEquals(16, replacement.remaining());
+        assertEquals(16, replacement.waiting(OUTPUT));
+        assertEquals(8, old.disk.stored);
+        assertEquals(0, old.directRemainder());
+    }
+
+    @Test
+    void cancellationInsideDirectRequesterCallbackDoesNotLoseOrDuplicateOutput() throws Exception {
+        var fixture = new Fixture(16, false, false);
+        fixture.link.beforeDelivery = () -> {
+            fixture.link.beforeDelivery = () -> {};
+            fixture.logic.cancel();
+        };
+        fixture.receiveDirect(8);
+        fixture.flushDirect();
+        assertFalse(fixture.logic.hasJob());
+        assertEquals(8, fixture.disk.stored);
+        assertEquals(0, fixture.directRemainder());
+        assertEquals(0, fixture.held());
+    }
+
+    @Test
     void standaloneOutputStillFallsThroughToNetworkStorage() throws Exception {
         var fixture = new Fixture(16, true, false);
         assertEquals(8, fixture.produce(8));
@@ -269,6 +345,22 @@ class RequesterOutputDeliveryTest {
 
         long produce(long amount) {
             return network.insert(OUTPUT, amount, MODULATE, source);
+        }
+
+        void receiveDirect(long amount) throws Exception {
+            var method = logic.getClass().getDeclaredMethod("receiveDeferredOutput", job.getClass(), AEKey.class, long.class);
+            method.setAccessible(true);
+            method.invoke(logic, job, OUTPUT, amount);
+        }
+
+        void flushDirect() throws Exception {
+            var method = logic.getClass().getDeclaredMethod("flushDirectOutputRemainders");
+            method.setAccessible(true);
+            method.invoke(logic);
+        }
+
+        long directRemainder() throws Exception {
+            return ((ListCraftingInventory) field(logic, "directOutputRemainders").get(logic)).list.get(OUTPUT);
         }
 
         void flush() throws Exception {

@@ -34,9 +34,32 @@ public final class ArmorMitigationRules {
         }
         return switch (stage) {
             case "matrix_shield" -> applyMidStage(damageClass, incoming);
-            case "phase_shield", "multidimensional_protection" -> 0.0F;
+            case "phase_shield" -> Math.max(0.0F, incoming - ArmorOverloadRules.PHASE_SHIELD_MAX_DAMAGE);
+            case "overload_protection", "multidimensional_protection" -> 0.0F;
             default -> incoming;
         };
+    }
+
+    /** Keep the paid absorption accurate even when subtracting 1024 rounds back to the input float. */
+    public static float preventedDamage(String stage, DamageClass damageClass, float incoming) {
+        return "phase_shield".equals(stage)
+                ? Math.min(Math.max(0.0F, incoming), ArmorOverloadRules.PHASE_SHIELD_MAX_DAMAGE)
+                : Math.max(0.0F, incoming - apply(stage, damageClass, incoming));
+    }
+
+    public static int priority(String stage) {
+        return switch (stage) {
+            case "multidimensional_protection" -> 4;
+            case "overload_protection" -> 3;
+            case "phase_shield" -> 2;
+            case "matrix_shield" -> 1;
+            default -> 0;
+        };
+    }
+
+    public static boolean extinguishesFire(String stage) {
+        return "matrix_shield".equals(stage) || "overload_protection".equals(stage)
+                || "multidimensional_protection".equals(stage);
     }
 
     private static float applyMidStage(DamageClass damageClass, float incoming) {

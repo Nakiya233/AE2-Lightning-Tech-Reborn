@@ -1,5 +1,11 @@
 package com.moakiee.ae2lt.block;
 
+import java.util.List;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraftforge.fml.ModList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvent;
@@ -40,6 +46,16 @@ public class OverloadProcessingFactoryBlock extends AE2LTBaseEntityBlock<Overloa
         registerDefaultState(defaultBlockState()
                 .setValue(WORKING, false)
                 .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH));
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, BlockGetter context,
+            List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+        super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+        if (ModList.get().isLoaded("advanced_ae")) {
+            tooltipComponents.add(Component.translatable("tooltip.ae2lt.overload_processing_factory.reactions")
+                    .withStyle(ChatFormatting.GRAY));
+        }
     }
 
     @Override
@@ -165,6 +181,3 @@ public class OverloadProcessingFactoryBlock extends AE2LTBaseEntityBlock<Overloa
         level.playSound(player, pos, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
     }
 }
-
-
-

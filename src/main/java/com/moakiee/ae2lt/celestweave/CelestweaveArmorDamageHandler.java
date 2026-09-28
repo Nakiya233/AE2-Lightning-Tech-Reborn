@@ -21,6 +21,8 @@ import com.moakiee.ae2lt.AE2LightningTech;
 import com.moakiee.ae2lt.config.AE2LTCommonConfig;
 import com.moakiee.ae2lt.device.capability.DeviceCapability;
 import com.moakiee.ae2lt.celestweave.module.ResistanceSubmodule;
+import com.moakiee.ae2lt.celestweave.module.OverloadProtectionSubmodule;
+import com.moakiee.ae2lt.celestweave.service.ArmorShieldPayment;
 import com.moakiee.ae2lt.celestweave.module.MultidimensionalProtectionSubmodule;
 import com.moakiee.ae2lt.celestweave.service.ArmorCapabilityCollector;
 import com.moakiee.ae2lt.celestweave.service.ArmorCapabilityCollector.ActiveCapability;
@@ -76,12 +78,14 @@ public final class CelestweaveArmorDamageHandler {
                     staged.stage(),
                     classifyDamage(source),
                     incoming);
-            if (payMitigationLightning(player, mitigation, staged, incoming - afterMitigation)) {
+            float prevented = ArmorMitigationRules.preventedDamage(
+                    staged.stage(), classifyDamage(source), incoming);
+            if (payMitigationLightning(player, mitigation, staged, prevented, null)) {
                 if (afterMitigation <= 0.0F) {
                     if (!isReflectingDamage()) {
                         reflectIncomingDamage(player, source, incoming);
                     }
-                    return IncomingDamageResult.cancel();
+                    return new IncomingDamageResult("phase_shield".equals(staged.stage()) ? incoming : 0.0F, true);
                 }
                 if (!isHitFeedbackEnabled(mitigation.armor(), staged.stage())) {
                     markSuppressShieldHitFeedback(player);
@@ -144,12 +148,17 @@ public final class CelestweaveArmorDamageHandler {
     }
 
     private static ActiveCapability collectMitigation(java.util.List<ActiveCapability> capabilities) {
+        ActiveCapability best = null;
+        int bestPriority = 0;
         for (var active : capabilities) {
-            if (active.capability() instanceof DeviceCapability.StagedMitigation) {
-                return active;
+            if (active.capability() instanceof DeviceCapability.StagedMitigation staged
+                    && ArmorMitigationRules.priority(staged.stage()) > bestPriority) {
+                best = active;
+                bestPriority = ArmorMitigationRules.priority(staged.stage());
             }
         }
-        return null;
+        // Prefer the strongest shield if external equipment exposes more than one active tier.
+        return best;
     }
 
     private static ArmorMitigationRules.DamageClass classifyDamage(DamageSource source) {
@@ -195,15 +204,18 @@ public final class CelestweaveArmorDamageHandler {
             Player player,
             ActiveCapability mitigation,
             DeviceCapability.StagedMitigation staged,
-            float preventedDamage) {
+            float preventedDamage,
+            Object damage) {
         if (MultidimensionalProtectionSubmodule.ID.equals(staged.stage())) {
             return true;
         }
         if (!(player instanceof ServerPlayer serverPlayer) || preventedDamage <= 0.0F) {
             return true;
         }
-        if ("phase_shield".equals(staged.stage())) {
-            return payPhaseShield(serverPlayer, mitigation, preventedDamage);
+        if ("phase_shield".equals(staged.stage()) || OverloadProtectionSubmodule.ID.equals(staged.stage())) {
+            return ArmorShieldPayment.pay(serverPlayer, mitigation.armor(), ShieldChargeWindow.quote(
+                    mitigation.armor(), ShieldChargeWindow.Profile.forStage(staged.stage()),
+                    serverPlayer.level().getGameTime(), preventedDamage), damage);
         }
         long amount = (long) Math.ceil(preventedDamage
                 * ArmorModuleLightningPolicy.triggeredCost(ArmorModuleLightningPolicy.Trigger.MATRIX_SHIELD)
@@ -251,37 +263,10 @@ public final class CelestweaveArmorDamageHandler {
         if (MultidimensionalProtectionSubmodule.ID.equals(stage)) {
             return MultidimensionalProtectionSubmodule.isHitFeedbackEnabled(armor);
         }
+        if (OverloadProtectionSubmodule.ID.equals(stage)) {
+            return OverloadProtectionSubmodule.isHitFeedbackEnabled(armor);
+        }
         return ResistanceSubmodule.isHitFeedbackEnabled(armor, stage);
-    }
-
-    private static boolean payPhaseShield(
-            ServerPlayer player,
-            ActiveCapability mitigation,
-            float preventedDamage) {
-        PhaseShieldChargeWindow.Quote quote = PhaseShieldChargeWindow.quote(
-                mitigation.armor(),
-                player.level().getGameTime(),
-                preventedDamage);
-        var lightningCost = ArmorLightningService.LightningCost.ehv(quote.ehvCost());
-        if (!ArmorLightningService.hasCost(player, mitigation.armor(), lightningCost)) {
-            ArmorResourceFeedback.noExtremeHighVoltage(player);
-            return false;
-        }
-        ArmorEnergyService.EnergyPayment payment = ArmorEnergyService.consumeActiveCostPayment(
-                player,
-                mitigation.armor(),
-                quote.feCost());
-        if (!payment.paid()) {
-            ArmorResourceFeedback.noFe(player);
-            return false;
-        }
-        if (!ArmorLightningService.consume(player, mitigation.armor(), lightningCost)) {
-            payment.refund();
-            ArmorResourceFeedback.noExtremeHighVoltage(player);
-            return false;
-        }
-        PhaseShieldChargeWindow.record(mitigation.armor(), quote);
-        return true;
     }
 
     public static boolean shouldSuppressShieldHitFeedback(LivingEntity entity) {

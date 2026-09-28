@@ -94,7 +94,7 @@ public final class ArmorCapabilityCollector {
     private static boolean isSubmoduleActiveForSide(Player player, ItemStack armor, CelestweaveArmorSubmodule submodule) {
         if (player.level().isClientSide()) {
             // Client derives active state from the synced stack; no client-side cache.
-            return CelestweaveArmorState.isSubmoduleActiveClient(armor, submodule);
+            return CelestweaveArmorState.isSubmoduleActiveClient(armor, submodule, player.level().getGameTime());
         }
         return CelestweaveArmorState.isSubmoduleRuntimeActive(armor, submodule.id());
     }

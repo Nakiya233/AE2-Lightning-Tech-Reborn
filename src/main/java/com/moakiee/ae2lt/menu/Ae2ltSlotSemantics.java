@@ -4,6 +4,10 @@ import appeng.menu.SlotSemantic;
 import appeng.menu.SlotSemantics;
 
 public final class Ae2ltSlotSemantics {
+    public static final SlotSemantic OVERLOADED_IO_FILTER =
+            SlotSemantics.register("AE2LT_OVERLOADED_IO_FILTER", false);
+    public static final SlotSemantic OVERLOADED_IO_MATRIX =
+            SlotSemantics.register("AE2LT_OVERLOADED_IO_MATRIX", false);
     public static final SlotSemantic LIGHTNING_SIMULATION_CATALYST =
             SlotSemantics.register("AE2LT_LIGHTNING_SIMULATION_CATALYST", false);
     public static final SlotSemantic LIGHTNING_ASSEMBLY_INPUT_0 =

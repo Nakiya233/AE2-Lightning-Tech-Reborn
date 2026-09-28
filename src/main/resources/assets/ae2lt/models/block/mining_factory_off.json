@@ -2,8 +2,8 @@
   "parent": "minecraft:block/block",
   "textures": {
     "case": "ae2lt:block/generics/top",
-    "metal": "minecraft:block/iron_block",
-    "lamp": "minecraft:block/coal_block",
+    "metal": "ae2lt:block/mining_factory/cutting_metal",
+    "lamp": "ae2lt:block/overload_processing_factory/crystal_off",
     "particle": "ae2lt:block/generics/top"
   },
   "elements": [

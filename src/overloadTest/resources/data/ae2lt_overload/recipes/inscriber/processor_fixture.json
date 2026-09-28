@@ -1,0 +1,19 @@
+{
+  "type": "ae2:inscriber",
+  "mode": "press",
+  "ingredients": {
+    "top": {
+      "item": "ae2:printed_logic_processor"
+    },
+    "middle": {
+      "item": "minecraft:emerald"
+    },
+    "bottom": {
+      "item": "ae2:printed_silicon"
+    }
+  },
+  "result": {
+    "count": 1,
+    "item": "minecraft:clock"
+  }
+}

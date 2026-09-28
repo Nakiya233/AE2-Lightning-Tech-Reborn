@@ -62,8 +62,9 @@ final class AE2LTEmiCategories {
                 .forEach((id, recipe) -> registry.addRecipe(new EmiLightningTransformRecipe(id, recipe)));
         RecipeManagerByTypeAccess.byType(recipeManager, ModRecipeTypes.LIGHTNING_STRIKE_TYPE.get())
                 .forEach((id, recipe) -> registry.addRecipe(new EmiLightningStrikeRecipe(id, recipe)));
-        RecipeManagerByTypeAccess.byType(recipeManager, ModRecipeTypes.OVERLOAD_PROCESSING_TYPE.get())
-                .forEach((id, recipe) -> registry.addRecipe(new EmiOverloadProcessingRecipe(id, recipe)));
+        com.moakiee.ae2lt.machine.overloadfactory.recipe.OverloadProcessingRecipeCatalog
+                .displayRecipes(recipeManager)
+                .forEach(recipe -> registry.addRecipe(new EmiOverloadProcessingRecipe(recipe.getId(), recipe)));
         RecipeManagerByTypeAccess.byType(recipeManager, ModRecipeTypes.CRYSTAL_CATALYZER_TYPE.get())
                 .forEach((id, recipe) -> {
                     if (!recipe.getOutputTemplate().isEmpty()) {

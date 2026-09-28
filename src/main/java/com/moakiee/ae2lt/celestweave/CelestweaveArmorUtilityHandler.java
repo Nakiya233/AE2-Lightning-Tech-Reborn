@@ -224,7 +224,8 @@ public final class CelestweaveArmorUtilityHandler {
             return;
         }
         for (var active : capabilities) {
-            if (active.capability() instanceof DeviceCapability.StagedMitigation) {
+            if (active.capability() instanceof DeviceCapability.StagedMitigation staged
+                    && ArmorMitigationRules.extinguishesFire(staged.stage())) {
                 player.clearFire();
                 player.setRemainingFireTicks(0);
                 return;

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.moakiee.ae2lt.AE2LightningTech;
 import com.moakiee.ae2lt.block.MatrixControllerBlock;
 import com.moakiee.ae2lt.block.MatrixFormedBlock;
@@ -35,6 +37,7 @@ import com.moakiee.ae2lt.registry.ModBlocks;
 import com.moakiee.ae2lt.registry.ModItems;
 import com.moakiee.ae2lt.util.NativeStackDropHelper;
 import com.moakiee.ae2lt.crafting.matrix.core.CraftingCoreHost;
+import com.moakiee.ae2lt.crafting.runtime.api.DeferredCraftingProvider;
 import com.moakiee.ae2lt.crafting.matrix.core.MolecularCopyAssembler;
 import com.moakiee.thunderbolt.api.crafting.batch.BatchDispatchMode;
 
@@ -627,19 +630,29 @@ public class MatrixControllerBlockEntity extends BlockEntity
     }
 
     public long pushBatch(IPatternDetails details, KeyCounter[] oneCopyTemplate, long maxCraft) {
-        long remaining = cluster.pushBatch(details, oneCopyTemplate, maxCraft);
+        return pushBatch(details, oneCopyTemplate, maxCraft, null);
+    }
+
+    public long pushBatch(IPatternDetails details, KeyCounter[] oneCopyTemplate, long maxCraft,
+                          @Nullable DeferredCraftingProvider.OutputSink returns) {
+        long remaining = cluster.pushBatch(details, oneCopyTemplate, maxCraft, returns);
         if (remaining != maxCraft) persistRuntimeStateIfChanged();
         return remaining;
     }
 
     public boolean pushPattern(IPatternDetails details, KeyCounter[] oneCopyTemplate) {
-        boolean accepted = cluster.pushSingle(details, oneCopyTemplate);
+        return pushPattern(details, oneCopyTemplate, null);
+    }
+
+    public boolean pushPattern(IPatternDetails details, KeyCounter[] oneCopyTemplate,
+                               @Nullable DeferredCraftingProvider.OutputSink returns) {
+        boolean accepted = cluster.pushSingle(details, oneCopyTemplate, returns);
         if (accepted) persistRuntimeStateIfChanged();
         return accepted;
     }
 
     public boolean isWorking() {
-        return formed && cluster.threadsInFlight() > 0;
+        return formed && cluster.isWorking();
     }
 
     @Override

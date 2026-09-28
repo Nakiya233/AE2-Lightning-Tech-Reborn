@@ -65,7 +65,7 @@ final class PigmeeConversionLogic {
         if (target.is(ModItems.RAILGUN_MODULE_OVERLOAD_EXECUTION.get())) {
             return Conversion.MULTIDIMENSIONAL_EXECUTION;
         }
-        if (target.is(ModItems.CELESTWEAVE_SUBMODULE_PHASE_SHIELD.get())) {
+        if (target.is(ModItems.CELESTWEAVE_SUBMODULE_OVERLOAD_PROTECTION.get())) {
             return Conversion.MULTIDIMENSIONAL_PROTECTION;
         }
         return null;

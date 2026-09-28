@@ -14,7 +14,7 @@ beyond space and time.
 Every completed Research Note lists nine offerings. The first three are always:
 
 1. **Pigmee Core**
-2. **Undying Module**
+2. **Overload Protection Module**
 3. **Phase Lock Module**
 
 The remaining six are chosen separately for every note, so always follow the list written in the
@@ -27,7 +27,7 @@ their order is too close to distinguish.
 
 Finally, load a **Thunderstorm Condensate** into the Atmospheric Ionizer and activate it. If every
 offering and its order are correct, lightning carries the nine offerings away and leaves behind an
-enormous **Hyperdimensional Pigmee**. Pigmee Core, Undying Module and Phase Lock Module shatter in
+enormous **Hyperdimensional Pigmee**. Pigmee Core, Overload Protection Module and Phase Lock Module shatter in
 the lightning one after another. Five seconds later the Pigmee returns to normal and can be picked
 up.
 
@@ -49,7 +49,7 @@ boundary-crossing conversion for you, then return to being an ordinary Pigmee.
 | Tianshu Supercomputer Overload Main Core | Multidimensional Tianshu Core |
 | Tianshu Matter Warping Matrix Overload Main Core | Multidimensional Matrix Core |
 | Overload Execution Module | Multidimensional Execution Module |
-| Phase Shield Module | Multidimensional Protection Module |
+| Overload Protection Module | Multidimensional Protection Module |
 
 The Creative Pigmee can perform the same conversions without losing its power, and it can also
 copy a Hyperdimensional Pigmee. JEI and EMI do not show these unusual recipes; this record is the
